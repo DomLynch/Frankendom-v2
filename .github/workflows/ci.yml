@@ -36,8 +36,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: Assemble site
         run: |
-          mkdir -p site
-          cp -r index.html src data assets site/
+          # code lives under a folder named for the build, so a phone never runs a cached older module after a deploy
+          # (the server sends no Cache-Control; data is fetched no-cache and stays at the root)
+          mkdir -p "site/b/${GITHUB_SHA}"
+          cp -r index.html data assets site/
+          cp -r src "site/b/${GITHUB_SHA}/"
+          sed -i "s#\./src/client/main.js#./b/${GITHUB_SHA}/src/client/main.js#" site/index.html
+          grep -q "b/${GITHUB_SHA}/src/client/main.js" site/index.html
           echo "${GITHUB_SHA}" > site/build.txt
       - name: Publish
         run: |

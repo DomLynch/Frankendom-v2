@@ -4,7 +4,6 @@
 // to the sim's travel speed.
 import * as THREE from 'three';
 
-const GUARD_KEY = { thrust: 'mid', overhead: 'high', low: 'low', left: 'left', right: 'right' };
 const FADE = 0.12;
 
 export function createFighterView(scene, color) {
@@ -46,6 +45,10 @@ export function attachBody(view, body, clips, def) {
     view.sword = sword;
   }
   view.spine = body.getObjectByName('mixamorigSpine1') || null;
+  if (def.guardTilt) {
+    const B = def.guardTilt.bones;
+    view.tiltBones = { yaw: body.getObjectByName(B.yaw), arm: body.getObjectByName(B.arm), spine: body.getObjectByName(B.spine) };
+  }
 }
 
 // the world-space hand frame at bind pose, turned into a holder on the hand bone whose +Y is the blade
@@ -89,7 +92,7 @@ function roleFor(f, sim, def) {
     const k = f.hurtKind === 'parried' || f.hurtKind === 'broken' || f.hurtKind === 'posture' ? def.states.parried : def.states.hurt;
     return { role: k, frac: Math.min(1, f.age / Math.max(1, f.age + f.stun)) };
   }
-  if (f.phase === 'guard') return { role: def.states.guard[GUARD_KEY[f.guardSide] || 'mid'] };
+  if (f.phase === 'guard') return { role: def.states.guard, guard: f.guardSide || 'thrust' };
   if (f.speed > 0.05) {
     if (f.speed > 3.5) return { role: def.states.run, speed: f.speed };
     return { role: def.states.walk, speed: f.speed };
@@ -139,4 +142,11 @@ export function drawFighter(view, f, sim, def, dt, frozen) {
     }
   }
   view.mixer.update(frozen ? 0 : dt);
+  // the guard side, V1's way: one Guard clip plus a per-side tilt of the torso, chest and sword arm
+  if (pose.guard && def.guardTilt) {
+    const t = def.guardTilt.sides[pose.guard], b = view.tiltBones;
+    if (t.yaw) b.yaw?.rotateY(t.yaw);
+    if (t.arm) b.arm?.rotateX(t.arm);
+    if (t.spine) b.spine?.rotateX(t.spine);
+  }
 }

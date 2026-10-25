@@ -6,6 +6,14 @@
     "opponent": "makehuman/mh-woman-02.glb"
   },
   "hideMeshes": "^Layer_",
+  "guardTilt": {
+    "about": "V1 characters.ts:434-437 GUARD_TILT: one Guard clip, the side shown by radians added after the mixer: torso yaw (spine_01 -> mixamorigSpine, y), sword-arm pitch (upperarm_r -> mixamorigRightArm, x), chest pitch (spine_02 -> mixamorigSpine1, x)",
+    "bones": { "yaw": "mixamorigSpine", "arm": "mixamorigRightArm", "spine": "mixamorigSpine1" },
+    "sides": {
+      "thrust": { "yaw": 0, "arm": 0, "spine": 0 }, "left": { "yaw": 0.45, "arm": 0, "spine": 0 }, "right": { "yaw": -0.45, "arm": 0, "spine": 0 },
+      "overhead": { "yaw": 0, "arm": -0.5, "spine": -0.25 }, "low": { "yaw": 0, "arm": 0.5, "spine": 0.25 }
+    }
+  },
   "bodyWaitMs": 8000,
   "sword": { "length": 1.0, "handle": 0.12 },
   "roles": {
@@ -14,11 +22,7 @@
     "StrafeLeft":  { "file": "mixamo/clips/117610901-left-strafe.glb", "loop": true, "speed": 3.6 },
     "StrafeRight": { "file": "mixamo/clips/117610902-right-strafe.glb", "loop": true, "speed": 3.6 },
     "Run":         { "file": "mixamo/clips/111290901-run.glb", "loop": true, "speed": 3.41 },
-    "Guard":       { "file": "mixamo/clips/hs/hs002-guard-half-sword-c.glb", "loop": true },
-    "GuardHigh":   { "file": "mixamo/clips/hs/hs003-guard-half-sword-u.glb", "loop": true },
-    "GuardLow":    { "file": "mixamo/clips/hs/hs004-guard-half-sword-d.glb", "loop": true },
-    "GuardLeft":   { "file": "mixamo/clips/hs/hs005-guard-half-sword-l.glb", "loop": true },
-    "GuardRight":  { "file": "mixamo/clips/hs/hs006-guard-half-sword-r.glb", "loop": true },
+    "Guard":       { "file": "mixamo/clips/128650903-standing-block-idle.glb", "loop": true },
     "BlockImpact": { "file": "mixamo/clips/122380901-great-sword-blocking.glb" },
     "Parry":       { "file": "mixamo/clips/hs/hs009-parry-half-sword-c.glb" },
     "Deflected":   { "file": "mixamo/clips/hs/hs048-wound-upper-w-b.glb" },
@@ -37,7 +41,7 @@
   },
   "states": {
     "idle": "Armed", "walk": "ArmedWalk", "strafeLeft": "StrafeLeft", "strafeRight": "StrafeRight", "run": "Run",
-    "guard": { "mid": "Guard", "high": "GuardHigh", "low": "GuardLow", "left": "GuardLeft", "right": "GuardRight" },
+    "guard": "Guard",
     "blockHit": "BlockImpact", "parry": "Parry", "parried": "Deflected", "roll": "Roll", "backstep": "Deflected",
     "hurt": "Hit", "stunned": "Deflected", "exhausted": "Deflected", "dead": "Death"
   },
