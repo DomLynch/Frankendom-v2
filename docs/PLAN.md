@@ -62,13 +62,18 @@ test/
 
 ## The four steps
 
-**1. Two fighters, one sword, on the phone.**
-Create `src/sim/` (sim, rng, fighter, moves, the basic parts of combat), `data/move-defs.json`, `controls.json`, `fighter-plain.json` and the client. You get light and heavy attacks, guard and the thumb controls. The fight runs locally in the browser, but `sim.js` is already the module the server will import. Tests cover determinism and timing.
-Delivered to a VPS preview path. Dom plays it at 375 wide. One still for Dom.
+**1. Two fighters, one sword, V1's full controls, on the phone.** Done (live 25 Oct).
+- **Scope widened by Dom on 25 Oct:** "the full controls that we used to use on Frankendom with none of the bloat … with the thumbstick and all that special moves forward slash heavy kick dodge roll".
+- So step 1 shipped every duel rule in `docs/RULES.md`: light, heavy and charge, stab, kick, five-sided guard, parry and riposte, feint, roll and backstep, posture break into a critical, counter, rear and stop-hit, hyper-armour, stamina and exhaustion, and the buffer.
+- Specials are still to come.
+- Files: `src/sim/` (sim, rng, brain), the `data/` rows and the client. It runs locally, and `sim.js` is the module the server will import.
+- Tests cover determinism and timing.
+- Live at v2.frankendom.com.
 
-**2. The feel: parry, riposte, roll, hit-stun, hit-stop.**
-Write `docs/RULES.md` from the Lead's controls-and-combat page, then `data/rules.json`, and extend `combat.js` and `moves.js`. Hit-stop is a sim event the renderer obeys, so the sim never pauses.
-Acceptance: a two-minute side by side on Dom's phone where V2's light attack feels identical to V1's. One clip for Dom.
+**2. The feel check.** RULES.md is done.
+- Acceptance: a two-minute side by side on Dom's phone where V2's light attack feels identical to V1's.
+- Hit-stop is a presentation row (`data/hit-stop.json`, scale 0 = live V1). Dom judges it with `?hitstop=1`.
+- Tuning goes into data rows only. One clip for Dom.
 
 **3. Live: the sim on the server, one zone, one opponent, two phones.**
 Add `server/room.js` (Node, WebSocket, the same `src/sim/sim.js`) and `ledger.js`, plus `data/zone.json`, `parts.json` and `behaviours.json`, and `src/client/net.js`. Players drop in and out of one live zone. One opponent runs on the server with per-part budgets held there. Two phones hit it and credit settles on the server. One opponent brain comes from a behaviour row.
