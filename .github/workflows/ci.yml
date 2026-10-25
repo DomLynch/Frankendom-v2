@@ -18,7 +18,7 @@ jobs:
       - run: npm test
 
   # Every green main goes live at https://v2.frankendom.com (site root, no prefix).
-  # Target and key come from Frankendom Deploy as repo secrets; until they exist the job skips.
+  # The key is locked by rrsync to /srv/frankendom-v2/live on the VPS, so the remote path is "./".
   deploy:
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -28,35 +28,31 @@ jobs:
       group: deploy
       cancel-in-progress: false
     env:
-      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-      DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+      KEY: ${{ secrets.V2_DEPLOY_KEY }}
+      KH: ${{ secrets.V2_DEPLOY_KNOWN_HOSTS }}
+      U: ${{ secrets.V2_DEPLOY_USER }}
+      H: ${{ secrets.V2_DEPLOY_HOST }}
     steps:
       - uses: actions/checkout@v4
-      - name: Skip until the deploy target exists
-        id: gate
-        run: |
-          if [ -z "$DEPLOY_HOST" ] || [ -z "$DEPLOY_PATH" ] || [ -z "$DEPLOY_KEY" ]; then
-            echo "Deploy secrets not set yet; skipping."; echo "go=0" >> "$GITHUB_OUTPUT"
-          else echo "go=1" >> "$GITHUB_OUTPUT"; fi
       - name: Assemble site
-        if: steps.gate.outputs.go == '1'
         run: |
-          mkdir -p _site
-          cp index.html _site/index.html
-          cp -r src data _site/
-          echo "${GITHUB_SHA}" > _site/build.txt
+          mkdir -p site
+          cp -r index.html src data site/
+          echo "${GITHUB_SHA}" > site/build.txt
       - name: Publish
-        if: steps.gate.outputs.go == '1'
         run: |
-          install -m 600 /dev/null key && printf '%s\n' "$DEPLOY_KEY" > key
-          rsync -az --delete -e "ssh -i key -o StrictHostKeyChecking=accept-new" \
-            _site/ "${DEPLOY_USER:-deploy}@${DEPLOY_HOST}:${DEPLOY_PATH}/"
-          rm -f key
+          install -m 600 /dev/null key && printf '%s\n' "$KEY" > key
+          printf '%s\n' "$KH" > kh
+          rsync -az --delete -e "ssh -i key -o IdentitiesOnly=yes -o UserKnownHostsFile=kh -o StrictHostKeyChecking=yes" site/ "$U@$H":./
+          rm -f key kh
+      # The server falls back to index.html for unknown paths, so only an exact SHA match counts.
+      # --resolve pins the VPS address, so a stale public DNS cache can't fail the check.
       - name: Check served build
-        if: steps.gate.outputs.go == '1'
         run: |
-          sleep 2
-          served=$(curl -fsS https://v2.frankendom.com/build.txt)
-          test "$served" = "$GITHUB_SHA" && echo "live: $served"
+          ip=$(getent ahostsv4 "$H" | awk 'NR==1{print $1}'); ip=${ip:-$H}
+          for i in $(seq 1 20); do
+            served=$(curl -fsS --resolve "v2.frankendom.com:443:$ip" https://v2.frankendom.com/build.txt || true)
+            if [ "$served" = "$GITHUB_SHA" ]; then echo "live: $served"; exit 0; fi
+            echo "try $i: got '${served:0:40}'"; sleep 15
+          done
+          exit 1
