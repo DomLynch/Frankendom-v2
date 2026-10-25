@@ -5,7 +5,7 @@ import { createSim } from '../src/sim/sim.js';
 import { createBrain, think } from '../src/sim/brain.js';
 
 const load = (f) => JSON.parse(readFileSync(new URL(`../data/${f}.json`, import.meta.url), 'utf8'));
-const data = { rules: load('rules'), moves: load('move-defs'), behaviours: load('behaviours') };
+const data = { rules: load('rules'), moves: load('move-defs'), behaviours: load('behaviours'), specials: load('specials') };
 const easy = data.behaviours.brains.find((b) => b.id === 'easy');
 
 // two brains fight; returns the event log and final state
@@ -100,6 +100,40 @@ test('a held guard on the right side blocks: stamina drain, no damage from a lig
   const b = sim.state.fighters[1];
   assert.equal(b.hp, 150);
   assert.ok(b.st < 100);
+});
+
+test('specials: pommel 18/4/18, cleave 32/5/31, each on its own 900-tick cooldown', () => {
+  const sim = duel(3);
+  const a = sim.state.fighters[0];
+  sim.step([{ press: 'special1' }, idle]);
+  assert.equal(a.move, 'skill_pommel');
+  assert.equal(a.specialCd[0], 900 - 1);
+  run(sim, 39);
+  assert.equal(a.phase, 'attack');
+  run(sim, 1);
+  assert.equal(a.phase, 'ready');
+  a.st = 100;
+  const ev = [...sim.step([{ press: 'special1' }, idle])];
+  assert.equal(a.phase, 'ready', 'slot 1 still cooling');
+  assert.ok(ev.some((e) => e.t === 'PressRefused'));
+  sim.step([{ press: 'special2' }, idle]);
+  assert.equal(a.move, 'skill_cleave');
+  run(sim, 67);
+  assert.equal(a.phase, 'attack');
+  run(sim, 1);
+  assert.equal(a.phase, 'ready');
+  run(sim, 900);
+  assert.deepEqual(a.specialCd, [0, 0]);
+});
+
+test('a special lands with its own row: pommel 20 damage, stagger 50', () => {
+  const sim = duel(1.2);
+  sim.step([{ press: 'special1' }, idle]);
+  let hit = null;
+  for (let i = 0; i < 25 && !hit; i++) hit = sim.step([idle, idle]).find((e) => e.t === 'Hit');
+  assert.ok(hit);
+  assert.equal(hit.dmg, 20);
+  assert.equal(sim.state.fighters[1].stun, 50);
 });
 
 test('heavy is 32/5/31 and a chained light is 16/5/20', () => {

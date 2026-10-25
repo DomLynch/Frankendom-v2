@@ -9,8 +9,8 @@ import { createSim } from '../sim/sim.js';
 import { createBrain, think } from '../sim/brain.js';
 
 const get = (f) => fetch(`./data/${f}.json`, { cache: 'no-cache' }).then((r) => r.json());
-const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours] = await Promise.all(
-  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours'].map(get),
+const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specials] = await Promise.all(
+  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials'].map(get),
 );
 const params = new URLSearchParams(location.search);
 const hitScale = params.has('hitstop') ? Number(params.get('hitstop')) : hitStop.scale;
@@ -30,7 +30,7 @@ addEventListener('resize', () => {
   camera.updateProjectionMatrix();
 });
 
-const data = { rules, moves };
+const data = { rules, moves, specials };
 let seed = Number(params.get('seed')) || 1;
 let sim, brain, deadFor;
 function newBout() {
@@ -118,6 +118,9 @@ function frame(t) {
     bar('hp' + i, (f.hp / rules.health) * 100);
     bar('st' + i, (f.st / rules.stamina.max) * 100);
     bar('po' + i, (f.posture / rules.posture.max) * 100);
+  });
+  specials.slots.forEach((s, i) => {
+    document.getElementById('pad-' + s.press)?.classList.toggle('cool', sim.state.fighters[0].specialCd[i] > 0);
   });
   updateCamera(dt);
   renderer.render(scene, camera);

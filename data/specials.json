@@ -1,0 +1,8 @@
+{
+  "about": "The two SPECIAL buttons as V1's melee specials: each fires its skill's own move-defs row on its own cooldown (RPG-game trunk duel.ts:253-254,288-290,383-391). Slot 1 = the hero's day-one skill (src/fight/skill-defs.json:20, dayOne: pommel); slot 2 = the pre-filled second special (src/fight/sandbox-rules-defs.json specialPick, slot2Default: cleave). Cooldown = rules-defs.json skillCooldown 900 ticks, spent at commitment.",
+  "cooldown": 900,
+  "slots": [
+    { "press": "special1", "skill": "pommel", "move": "skill_pommel", "label": "POMMEL" },
+    { "press": "special2", "skill": "cleave", "move": "skill_cleave", "label": "CLEAVE" }
+  ]
+}

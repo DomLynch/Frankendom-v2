@@ -19,7 +19,8 @@ const MIRROR = { left: 'right', right: 'left', overhead: 'overhead', thrust: 'th
 const HEAVY_CLASS = new Set(['heavy_overhead', 'heavy_riposte', 'heavy_counter', 'critical']);
 
 export function createSim(data, seed = 1) {
-  const R = data.rules;
+  const specials = data.specials || { cooldown: 0, slots: [] };
+  const R = { ...data.rules, specials };
   const moves = Object.fromEntries(data.moves.moves.map((m) => [m.id, m]));
   const gap = R.body.spawnGap / 2;
   const state = {
@@ -28,7 +29,7 @@ export function createSim(data, seed = 1) {
     over: false,
     fighters: [makeFighter(R, 0, -gap, 0), makeFighter(R, 0, gap, Math.PI)],
   };
-  return { state, moves, rules: R, step: (intents) => step(state, intents, moves, R) };
+  return { state, moves, rules: R, specials, step: (intents) => step(state, intents, moves, R) };
 }
 
 function makeFighter(R, x, z, heading) {
@@ -37,7 +38,7 @@ function makeFighter(R, x, z, heading) {
     hp: R.health, st: R.stamina.max, posture: 0, postureHold: 0, rest: 0, exhausted: false,
     phase: 'ready', age: 0, fresh: false, stun: 0, hurtKind: null, chainFrom: null,
     move: null, chained: false, landed: false, parked: 0, charged: false, whiffHang: 0,
-    guardSide: null, parrying: false, parryCd: 0, exposed: 0,
+    guardSide: null, parrying: false, parryCd: 0, exposed: 0, specialCd: [0, 0],
     punish: 0, punishKind: null, counterWindow: 0, chainWindow: 0, lastLight: 'left', evadeEnd: 99,
     buffer: null, rollX: 0, rollZ: 0, speed: 0, moved: 0, sprinted: false,
   };
@@ -116,7 +117,9 @@ function structuredCloneLite(f) {
 
 // ---------- 1. decide ----------
 
-function resolvePress(f, press, intent) {
+function resolvePress(f, press, intent, R) {
+  const slot = R.specials.slots.find((s) => s.press === press);
+  if (slot) return slot.move;   // a special is never a riposte or a counter, whatever window is open
   if (press === 'light') {
     if (f.punish > 0) return 'slash_riposte';
     const side = intent.side || (f.lastLight === 'right' ? 'left' : 'right');
@@ -137,6 +140,8 @@ function legal(f, press, moveId, moves, R) {
   const standing = f.phase === 'ready' || f.phase === 'guard';
   const backTail = f.phase === 'backstep' && f.age >= R.backstep.cancelFrom;
   if (moveId === 'kick') return standing && f.st >= moves.kick.stamina;
+  const slot = R.specials.slots.findIndex((s) => s.press === press);
+  if (slot >= 0) return f.specialCd[slot] === 0 && (standing || backTail) && f.st >= moves[moveId].stamina;
   if (moveId) return (standing || backTail) && f.st >= moves[moveId].stamina;
   if (press === 'dodge') return (standing && f.st >= R.roll.cost) || (f.phase === 'backstep' && f.st >= R.roll.cost - R.backstep.cost);
   if (press === 'backstep') return standing && f.st >= R.backstep.cost;
@@ -164,9 +169,11 @@ function decide(f, foe, intent, moves, R, events, i) {
   }
 
   if (press) {
-    const moveId = resolvePress(f, press, intent);
+    const moveId = resolvePress(f, press, intent, R);
     if (legal(f, press, moveId, moves, R)) {
       f.buffer = null;
+      const slot = R.specials.slots.findIndex((s) => s.press === press);
+      if (slot >= 0) f.specialCd[slot] = R.specials.cooldown;   // spent at commitment: a whiff, block or parry spends it too
       if (moveId) startAttack(f, foe, moveId, moves, R, events, i);
       else if (press === 'dodge') startRoll(f, foe, intent, R, f.phase === 'backstep');
       else if (press === 'backstep') { spend(f, R, R.backstep.cost); enter(f, 'backstep'); }
@@ -452,6 +459,7 @@ function upkeep(f, foe, i, R, events) {
   if (f.punish > 0 && --f.punish === 0) f.punishKind = null;
   if (f.counterWindow > 0) f.counterWindow--;
   if (f.chainWindow > 0) f.chainWindow--;
+  for (let s = 0; s < f.specialCd.length; s++) if (f.specialCd[s] > 0) f.specialCd[s]--;
   if (f.evadeEnd < 99) f.evadeEnd++;
   if (f.buffer && --f.buffer.ttl <= 0) f.buffer = null;
 }
