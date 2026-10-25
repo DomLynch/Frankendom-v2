@@ -16,6 +16,7 @@ export const SCHEMA = {
   'camera': { keys: ['about', 'fov', 'near', 'far', 'back', 'height', 'fightBack', 'gapFloor', 'lookY', 'lookShift', 'side', 'lookSide', 'orbit', 'follow'] },
   'clips': { keys: ['about', 'base', 'bodies', 'hideMeshes', 'bodyWaitMs', 'sword', 'roles', 'states', 'paths'] },
   'controls': { keys: ['about', 'stick', 'strike', 'guard', 'dodge', 'buttons', 'ringLabels', 'gapPx', 'keys'], rows: { buttons: ['id', 'label', 'angle', 'sizePx'] } },
+  'feel': { keys: ['about', 'cameraKick', 'flinch', 'hurtRecoil', 'blockRecoil', 'killDip', 'hurtFlashMs', 'dots', 'sparks', 'trail'] },
   'fighter-plain': { keys: ['id', 'units', 'gear'] },
   'hit-stop': { keys: ['about', 'scale', 'stop', 'heavy'], rows: { stop: ['id', 'ms'], heavy: ['id', 'ms'] } },
   'move-defs': { keys: ['about', 'moves', 'paths'], rows: { moves: MOVE_KEYS, paths: ['id', 'clip', 'source', 'windup', 'active', 'recovery'] } },
