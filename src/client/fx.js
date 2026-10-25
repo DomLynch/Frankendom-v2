@@ -83,7 +83,7 @@ export function createFx(scene, def) {
           if (!e.poised) flinch(e.d, c.dir, kill, e.d === 0);
           if (e.d === 0) hurtFlash = def.hurtFlashMs / 1000;
         } else if (e.t === 'Blocked') {
-          shove(heavy ? K.heavyBlock : e.perfect ? K.perfectBlock : K.block, c.dir);
+          shove(heavy ? K.heavyGuard : e.perfect ? K.perfectGuard : K.guard, c.dir);
           clash(c.p, c.dir, e.perfect ? def.sparks.strength.perfectGuard : heavy ? def.sparks.strength.heavy : def.sparks.strength.guard);
           spray(c.p, c.dir, 4, def.dots.color.guard, def.dots.size.other, def.dots.life.other, def.dots.speed);
           body[e.d].block = { dir: c.dir, t: 0, k: heavy ? def.blockRecoil.heavy : 1 };
