@@ -9,9 +9,29 @@ export function createSound(def, base = './') {
   const last = {};   // cue -> last variant index, so a variant never repeats back to back
   const prev = [{}, {}];
 
+  // V1 audio/sprite.ts: Safari answers "maybe" for Ogg/Opus but can't decode it, so Opus goes first only on "probably";
+  // otherwise AAC first, and a failed decode falls through to the other file
+  const probe = document.createElement('audio');
+  const opus = probe.canPlayType('audio/ogg; codecs="opus"'), aac = probe.canPlayType('audio/mp4; codecs="mp4a.40.2"');
+  const order = opus === 'probably' ? [def.files.ogg, def.files.m4a] : [def.files.m4a, def.files.ogg];
+  // the bytes are fetched before any touch (fetching needs no gesture), so the first blows aren't silent on a phone network
+  const get = (f) => fetch(base + f).then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null);
+  const first = get(order[0]);   // the fallback file is fetched only if the first one fails
+  async function decode() {
+    for (const [i, f] of order.entries()) {
+      const b = await (i === 0 ? first : get(f));
+      if (!b) continue;
+      try { return await ctx.decodeAudioData(b.slice(0)); } catch { /* try the other format */ }
+    }
+    return null;
+  }
+
   function start() {
-    if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
+    // iOS also parks the context in 'interrupted' after a call, Siri or an app switch: resume from any non-running state
+    if (ctx) { if (ctx.state !== 'running') ctx.resume().catch(() => {}); return; }
     ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // iOS mutes "ambient" web audio under the ringer switch; a playback session plays like a game does (Safari 17+, V1 feedback.ts:75)
+    if (navigator.audioSession) try { navigator.audioSession.type = 'playback'; } catch { /* older WebKit */ }
     const m = def.mix, comp = ctx.createDynamicsCompressor();
     comp.threshold.value = m.compressor.threshold; comp.knee.value = m.compressor.knee; comp.ratio.value = m.compressor.ratio;
     comp.attack.value = m.compressor.attack; comp.release.value = m.compressor.release;
@@ -28,9 +48,8 @@ export function createSound(def, base = './') {
     }
     room.buffer = ir;
     room.connect(master);
-    const probe = document.createElement('audio');
-    const file = probe.canPlayType('audio/ogg; codecs="opus"') ? def.files.ogg : def.files.m4a;
-    fetch(base + file).then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b)).then((b) => { buffer = b; }).catch((e) => console.warn('sound', e));
+    decode().then((b) => { buffer = b; if (!b) console.warn('sound: no sprite format decoded'); });
+    if (ctx.state !== 'running') ctx.resume().catch(() => {});
   }
   for (const type of ['touchend', 'click', 'keydown']) addEventListener(type, start, { passive: true });
 
