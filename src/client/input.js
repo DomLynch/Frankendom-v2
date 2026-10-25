@@ -21,33 +21,36 @@ export function createInput(def, el = document.body) {
   // ---- stick ----
   const zone = document.getElementById('stick'), base = document.getElementById('base'), knob = document.getElementById('knob');
   const st = def.stick;
-  const showStick = (on, x, y) => {
-    for (const [e, d] of [[base, st.radiusPx * 2], [knob, 28]]) {
-      e.style.display = on ? 'block' : 'none';
-      e.style.width = e.style.height = d + 'px';
-    }
-    if (on) place(base, x, y, st.radiusPx * 2);
-  };
   const place = (e, x, y, d) => { e.style.left = x - d / 2 + 'px'; e.style.top = y - d / 2 + 'px'; };
+  // the stick always shows at its rest spot; a touch anywhere in the left zone moves it under the thumb
+  const showStick = (x, y) => {
+    base.style.display = knob.style.display = 'block';
+    base.style.width = base.style.height = st.radiusPx * 2 + 'px';
+    knob.style.width = knob.style.height = st.knobPx + 'px';
+    place(base, x, y, st.radiusPx * 2);
+    place(knob, x, y, st.knobPx);
+  };
+  const rest = () => showStick(st.restFromLeftPx, innerHeight - st.restFromBottomPx);
+  rest();
+  addEventListener('resize', () => s.stick.id === null && rest());
   zone.style.bottom = Math.max(0, st.bottomMinPx - 56) + 'px';
   zone.addEventListener('pointerdown', (e) => {
     if (s.stick.id !== null) return;
     zone.setPointerCapture(e.pointerId);
     Object.assign(s.stick, { id: e.pointerId, ox: e.clientX, oy: e.clientY, x: 0, y: 0 });
-    showStick(true, e.clientX, e.clientY);
-    place(knob, e.clientX, e.clientY, 28);
+    showStick(e.clientX, e.clientY);
   });
   zone.addEventListener('pointermove', (e) => {
     if (e.pointerId !== s.stick.id) return;
     const dx = (e.clientX - s.stick.ox) / st.radiusPx, dy = (e.clientY - s.stick.oy) / st.radiusPx;
     s.stick.x = dx; s.stick.y = dy;
     const len = Math.hypot(dx, dy) || 1, k = Math.min(1, len) * st.travelPx / len;
-    place(knob, s.stick.ox + dx * k, s.stick.oy + dy * k, 28);
+    place(knob, s.stick.ox + dx * k, s.stick.oy + dy * k, st.knobPx);
   });
   const endStick = (e) => {
     if (e.pointerId !== s.stick.id) return;
     Object.assign(s.stick, { id: null, x: 0, y: 0 });
-    showStick(false);
+    rest();
   };
   zone.addEventListener('pointerup', endStick);
   zone.addEventListener('pointercancel', endStick);
