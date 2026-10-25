@@ -19,8 +19,8 @@ const once = (url) => {
   return cache.get(url);
 };
 
-export async function loadBody(def, slot) {
-  const g = await once(def.base + def.bodies[slot]);
+export async function loadBody(def, slot, set = def.bodySet) {
+  const g = await once(def.base + (def.bodySets[set] || def.bodySets[def.bodySet])[slot]);
   const root = cloneSkinned(g.scene);
   const hide = new RegExp(def.hideMeshes);
   root.traverse((o) => {

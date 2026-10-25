@@ -1,9 +1,11 @@
 {
   "about": "Bodies and clips, loaded at runtime from the OpenTrident library (never copied here). Bodies are the 106-joint MakeHuman set; clips are the library's per-clip GLBs (mixamorig bone names). Keys are the game's role names (Strategy 2026-10-25); values are clip ids picked by the OpenTrident Dev, to be checked on a body before they lock. `start` / `hit` = clip fractions where the swing starts and where it strikes, measured on mh-male-01 from the right hand's speed relative to the hips (start: first frame over 25 % of peak; hit: peak; the foot for Kick). The renderer maps the sim's wind-up onto start..hit (skipping the flat lead-in, V1's start offsets) and active+recovery onto hit..end.",
   "base": "https://opentrident.org/models/",
-  "bodies": {
-    "player": "makehuman/mh-male-01.glb",
-    "opponent": "makehuman/mh-woman-02.glb"
+  "bodySet": "mixamo",
+  "bodySets": {
+    "about": "Dom 2026-10-25: the default pair is two polished, armoured Mixamo characters from the OpenTrident library (mixamorig bones, the same library clips play on them); ?body=makehuman brings back the 106-joint MakeHuman pair (the opponent crowd when the parts mechanic lands).",
+    "mixamo": { "player": "mixamo/phone/knight-d-pelegrini.glb", "opponent": "mixamo/phone/paladin-j-nordstrom.glb" },
+    "makehuman": { "player": "makehuman/mh-male-01.glb", "opponent": "makehuman/mh-woman-02.glb" }
   },
   "hideMeshes": "^Layer_",
   "guardTilt": {
