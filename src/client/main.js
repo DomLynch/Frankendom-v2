@@ -5,13 +5,14 @@ import { createStage } from './stage.js';
 import { lockPageZoom, viewW, viewH } from './zoom-guard.js';
 import { createInput } from './input.js';
 import { createFighterView, attachBody, drawFighter } from './render.js';
+import { createFx } from './fx.js';
 import { loadBody, loadClips } from './assets.js';
 import { createSim } from '../sim/sim.js';
 import { createBrain, think } from '../sim/brain.js';
 
 const get = (f) => fetch(`./data/${f}.json`, { cache: 'no-cache' }).then((r) => r.json());
-const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specials] = await Promise.all(
-  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials'].map(get),
+const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specials, feelDef] = await Promise.all(
+  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials', 'feel'].map(get),
 );
 const params = new URLSearchParams(location.search);
 const hitScale = params.has('hitstop') ? Number(params.get('hitstop')) : hitStop.scale;
@@ -46,6 +47,7 @@ function newBout() {
 newBout();
 
 const views = [createFighterView(scene, 0xb08a5a), createFighterView(scene, 0x7a5aa0)];
+const fx = createFx(scene, feelDef);
 const input = createInput(controls);
 // the fight starts once both bodies are in, or after bodyWaitMs on capsules
 let loaded = 0;
@@ -107,6 +109,7 @@ function frame(t) {
       acc -= STEP;
       const me = sim.state.fighters[0];
       const events = sim.step([input.sample(cam.yaw, me), aiOff ? {} : think(brain, sim, 1)]);
+      fx.onEvents(events, sim);
       const ms = stopMs(events);
       if (ms > 0) { frozenUntil = t + ms; acc = 0; break; }
       if (sim.state.over && ++deadFor >= rules.death) newBout();
@@ -116,8 +119,11 @@ function frame(t) {
     const won = sim.state.fighters[1].hp <= 0;
     document.getElementById('msg').textContent = won ? 'Victory' : 'Defeat';
   }
+  const feel = fx.update(dt, sim);
   sim.state.fighters.forEach((f, i) => {
     drawFighter(views[i], f, sim, clips, dt, frozen);
+    fx.applyPose(views[i], i, f);
+    fx.trail(views[i], f, sim);
     bar('hp' + i, (f.hp / rules.health) * 100);
     bar('st' + i, (f.st / rules.stamina.max) * 100);
     bar('po' + i, (f.posture / rules.posture.max) * 100);
@@ -126,6 +132,10 @@ function frame(t) {
     document.getElementById('pad-' + s.press)?.classList.toggle('cool', sim.state.fighters[0].specialCd[i] > 0);
   });
   updateCamera(dt);
+  camera.position.add(feel.offset);
+  camera.rotateZ(feel.roll);
+  renderer.toneMappingExposure = stage.light.exposure * (1 - fx.exposureDip);
+  document.getElementById('hp0').parentElement.classList.toggle('flash', fx.hurtFlash);
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }

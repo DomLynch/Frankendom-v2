@@ -43,7 +43,9 @@ export function attachBody(view, body, clips, def) {
     sword.position.y = def.sword.length / 2 - def.sword.handle;
     sword.castShadow = true;
     grip.holder.add(sword);
+    view.sword = sword;
   }
+  view.spine = body.getObjectByName('mixamorigSpine1') || null;
 }
 
 // the world-space hand frame at bind pose, turned into a holder on the hand bone whose +Y is the blade
@@ -93,7 +95,7 @@ function roleFor(f, sim, def) {
 
 export function drawFighter(view, f, sim, def, dt, frozen) {
   view.root.position.set(f.x, 0, f.z);
-  view.root.rotation.y = f.heading;
+  view.root.rotation.set(0, f.heading, 0);   // the fx layer adds flinch and recoil on top each frame
   const pose = roleFor(f, sim, def);
 
   if (!view.mixer) {

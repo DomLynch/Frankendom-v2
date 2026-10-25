@@ -1,0 +1,40 @@
+{
+  "about": "Presentation only (never in the sim): what plays on each sim event. Numbers from V1 live (RPG-game trunk 82a994d15) via the Lead's frankendom-lead-catalogue/docs/v2/feel-layer-for-v2.md; source file:line per block. Seconds unless noted.",
+  "cameraKick": {
+    "source": "src/fight/camera-kick.ts:9-15 (shoveFor); side knocks and the kick drop from hit-impact.ts:64-73",
+    "hit":          { "along": 0.02,  "drop": 0.012, "side": 0.02, "holdFrames": 0, "settle": 0.15 },
+    "heavyHit":     { "along": 0.05,  "drop": 0.06,  "side": 0.04, "holdFrames": 2, "settle": 0.22 },
+    "kick":         { "along": 0.02,  "drop": 0.1,   "side": 0.02, "holdFrames": 0, "settle": 0.15 },
+    "block":        { "along": 0.012, "drop": 0.01,  "side": 0,    "holdFrames": 0, "settle": 0.12 },
+    "perfectBlock": { "along": 0.012, "drop": 0.014, "side": 0,    "holdFrames": 0, "settle": 0.12 },
+    "heavyBlock":   { "along": 0.02,  "drop": 0.028, "side": 0,    "holdFrames": 1, "settle": 0.18 },
+    "guardBreak":   { "along": 0.05,  "drop": 0.06,  "side": 0,    "holdFrames": 2, "settle": 0.22 },
+    "parry":        { "along": 0.01,  "drop": 0.008, "side": 0.02, "holdFrames": 0, "settle": 0.12 },
+    "roll":       { "tiltDeg": 8, "dip": 0.08, "duration": 0.6 }
+  },
+  "flinch": {
+    "source": "src/fight/armfeel-defs.json",
+    "lean": 0.45, "killLean": 0.9, "nudge": 0.16, "decay": 12, "hold": 0.045, "killHold": 0.08, "heroShare": 0.25,
+    "bone": "mixamorigSpine1"
+  },
+  "hurtRecoil": { "source": "src/fight/characters.ts:929-930", "roll": 0.12, "push": 0.045 },
+  "blockRecoil": { "source": "scene.ts blockHeavy recoil (subagent read, 82a994d15)", "duration": 0.2, "roll": 0.06, "push": 0.045, "heavy": 1.5 },
+  "killDip": { "source": "src/fight/scene.ts:515-518", "frames": 4, "depth": 0.06 },
+  "hurtFlashMs": 120,
+  "dots": {
+    "source": "src/fight/fx.ts:92-103,155,226-229,252-266",
+    "count": 12, "life": { "other": 0.18, "flesh": 0.34, "kill": 0.55 },
+    "color": { "flesh": "#a32b27", "bloodless": "#b1a28a", "block": "#ffe4af" },
+    "size": { "flesh": 0.095, "other": 0.045 }, "speed": 2.2, "gravity": 8, "height": 1.25
+  },
+  "sparks": {
+    "source": "src/fight/clash-sparks.ts:16-20,69-72,98-102",
+    "min": 4, "max": 8, "life": [0.15, 0.5], "glint": 0.085, "size": 0.1, "opacity": 0.7,
+    "hot": "#e8ecf2", "cool": "#7d8ea3", "speed": 3.2, "gravity": 9, "bounce": 0.35,
+    "strength": { "Parried": 0.9, "heavyHit": 0.8, "GuardBroken": 0.8, "perfectBlock": 0.65, "Blocked": 0.4 }
+  },
+  "trail": {
+    "source": "src/fight/characters.ts:946",
+    "samples": 7, "opacity": 0.12, "color": "#e8dfc8", "from": 0.7, "to": 0.18
+  }
+}
