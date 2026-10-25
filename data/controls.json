@@ -1,0 +1,18 @@
+{
+  "about": "Thumb and keyboard controls as V1 plays them live: one-button 'layout A' (RPG-game trunk src/fight/input-rows.json, input.ts, touch-layout-defs.json variant 2). STRIKE: tap = light (alternates, or cuts to the stick's side), hold = heavy (charges while held), slide up = stab, slide sideways = that side's cut. GUARD: press = parry, hold = guard, slide = side. ROLL: tap = backstep (roll if the stick is pushed), hold = roll. Pad positions: px from the bottom-right corner; angle 0 = right, counter-clockwise.",
+  "stick": { "radiusPx": 42, "travelPx": 34, "deadZone": 0.12, "sprintPush": 1.4, "cutPush": 0.4, "bottomMinPx": 56 },
+  "strike": { "fromRightPx": 104, "fromBottomPx": 128, "sizePx": 72, "ringPx": 146, "tapMs": 220, "counterHoldMs": 80, "slidePx": 18, "stabHalfAngleDeg": 50 },
+  "guard": { "slidePx": 18, "deadBandDeg": 15 },
+  "dodge": { "holdMs": 150 },
+  "buttons": [
+    { "id": "guard", "label": "GUARD", "angle": 225, "sizePx": 50 },
+    { "id": "roll", "label": "ROLL", "angle": 315, "sizePx": 50 },
+    { "id": "kick", "label": "KICK", "angle": 180, "sizePx": 44 }
+  ],
+  "gapPx": 3,
+  "keys": {
+    "up": ["KeyW", "ArrowUp"], "down": ["KeyS", "ArrowDown"], "left": ["KeyA", "ArrowLeft"], "right": ["KeyD", "ArrowRight"],
+    "run": ["ShiftLeft", "ShiftRight"], "light": ["KeyF"], "heavy": ["KeyG"], "thrust": ["KeyT"], "kick": ["KeyC"],
+    "dodge": ["KeyE"], "guard": ["KeyQ"]
+  }
+}

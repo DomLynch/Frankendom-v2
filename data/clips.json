@@ -1,0 +1,42 @@
+{
+  "about": "Bodies and clips, loaded at runtime from the OpenTrident library (never copied here). Bodies are the 106-joint MakeHuman set; clips are the library's per-clip GLBs (mixamorig bone names). Keys are the game's role names (Strategy 2026-10-25); values are clip ids picked by the OpenTrident Dev, to be checked on a body before they lock. `hit` = the clip fraction where the strike lands; the renderer stretches wind-up to it and the rest to recovery.",
+  "base": "https://opentrident.org/models/",
+  "bodies": {
+    "player": "makehuman/mh-male-01.glb",
+    "opponent": "makehuman/mh-woman-02.glb"
+  },
+  "roles": {
+    "Armed":       { "file": "mixamo/clips/122990901-sword-and-shield-idle.glb", "loop": true },
+    "ArmedWalk":   { "file": "mixamo/clips/124540901-walk.glb", "loop": true, "speed": 1.679 },
+    "StrafeLeft":  { "file": "mixamo/clips/117610901-left-strafe.glb", "loop": true, "speed": 3.6 },
+    "StrafeRight": { "file": "mixamo/clips/117610902-right-strafe.glb", "loop": true, "speed": 3.6 },
+    "Run":         { "file": "mixamo/clips/111290901-run.glb", "loop": true, "speed": 3.41 },
+    "Guard":       { "file": "mixamo/clips/hs/hs002-guard-half-sword-c.glb", "loop": true },
+    "GuardHigh":   { "file": "mixamo/clips/hs/hs003-guard-half-sword-u.glb", "loop": true },
+    "GuardLow":    { "file": "mixamo/clips/hs/hs004-guard-half-sword-d.glb", "loop": true },
+    "GuardLeft":   { "file": "mixamo/clips/hs/hs005-guard-half-sword-l.glb", "loop": true },
+    "GuardRight":  { "file": "mixamo/clips/hs/hs006-guard-half-sword-r.glb", "loop": true },
+    "BlockImpact": { "file": "mixamo/clips/122380901-great-sword-blocking.glb" },
+    "Parry":       { "file": "mixamo/clips/hs/hs009-parry-half-sword-c.glb" },
+    "Deflected":   { "file": "mixamo/clips/hs/hs048-wound-upper-w-b.glb" },
+    "Attack":      { "file": "mixamo/clips/gladio/gl047-thracian-sword-right-side-slash.glb", "hit": 0.46 },
+    "Return":      { "file": "mixamo/clips/gladio/gl023-thracian-sword-left-side-slash.glb", "hit": 0.46 },
+    "Heavy":       { "file": "mixamo/clips/gladio/gl046-gladius-right-overhead-slash.glb", "hit": 0.46 },
+    "Thrust":      { "file": "mixamo/clips/hs/hs039-thrust-two-handed-r_c.glb", "hit": 0.46 },
+    "Kick":        { "file": "mixamo/clips/hs/hs066-kick-right.glb", "hit": 0.46 },
+    "Roll":        { "file": "mixamo/clips/gladio/gl015-dodge-roll.glb" },
+    "Hit":         { "file": "mixamo/clips/hs/hs047-wound-upper-w-f.glb" },
+    "Death":       { "file": "mixamo/clips/gladio/gl012-death-with-weapon.glb" }
+  },
+  "states": {
+    "idle": "Armed", "walk": "ArmedWalk", "strafeLeft": "StrafeLeft", "strafeRight": "StrafeRight", "run": "Run",
+    "guard": { "mid": "Guard", "high": "GuardHigh", "low": "GuardLow", "left": "GuardLeft", "right": "GuardRight" },
+    "block": "BlockImpact", "parry": "Parry", "parried": "Deflected", "roll": "Roll", "backstep": "Deflected",
+    "hurt": "Hit", "stunned": "Deflected", "exhausted": "Deflected", "dead": "Death"
+  },
+  "paths": {
+    "light_right": "Attack", "light_left": "Return", "light_right_chain": "Attack", "light_left_chain": "Return",
+    "heavy_overhead": "Heavy", "heavy_overhead_chain": "Heavy", "thrust": "Thrust",
+    "slash_riposte": "Attack", "riposte": "Thrust", "heavy_riposte": "Heavy", "kick": "Kick"
+  }
+}

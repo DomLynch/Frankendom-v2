@@ -1,0 +1,17 @@
+{
+  "about": "Hit-stop table (presentation only, never in the sim). Rows from RPG-game src/hit-stop-rules.json @ 223965735 (before the live game zeroed it). Effective ms = row ms x scale. scale 0 = the live game as played (Strategy 2026-10-25); Dom sets ?hitstop=1 on the URL to judge the table.",
+  "scale": 0,
+  "stop": [
+    { "id": "SpecialLanded", "ms": 50 },
+    { "id": "Blocked", "ms": 30 },
+    { "id": "Hit", "ms": 50 },
+    { "id": "Parried", "ms": 70 },
+    { "id": "GuardBroken", "ms": 90 },
+    { "id": "PostureBroken", "ms": 150 },
+    { "id": "Killed", "ms": 220 }
+  ],
+  "heavy": [
+    { "id": "Hit", "ms": 90 },
+    { "id": "Blocked", "ms": 50 }
+  ]
+}

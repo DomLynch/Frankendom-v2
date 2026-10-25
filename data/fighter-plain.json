@@ -1,0 +1,14 @@
+{
+  "id": "plain",
+  "units": {
+    "head":  { "gear": [] },
+    "torso": { "gear": [] },
+    "arms":  { "gear": [] },
+    "hands": { "gear": ["sword"] },
+    "legs":  { "gear": [] },
+    "feet":  { "gear": [] }
+  },
+  "gear": {
+    "sword": { "class": "sword", "moves": "move-defs" }
+  }
+}
