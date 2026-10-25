@@ -24,14 +24,14 @@
   "dots": {
     "source": "src/fight/fx.ts:92-103,155,226-229,252-266",
     "count": 12, "life": { "other": 0.18, "flesh": 0.34, "kill": 0.55 },
-    "color": { "flesh": "#a32b27", "bloodless": "#b1a28a", "block": "#ffe4af" },
+    "color": { "flesh": "#a32b27", "bloodless": "#b1a28a", "guard": "#ffe4af" },
     "size": { "flesh": 0.095, "other": 0.045 }, "speed": 2.2, "gravity": 8, "height": 1.25
   },
   "sparks": {
     "source": "src/fight/clash-sparks.ts:16-20,69-72,98-102",
     "min": 4, "max": 8, "life": [0.15, 0.5], "glint": 0.085, "size": 0.1, "opacity": 0.7,
     "hot": "#e8ecf2", "cool": "#7d8ea3", "speed": 3.2, "gravity": 9, "bounce": 0.35,
-    "strength": { "Parried": 0.9, "heavyHit": 0.8, "GuardBroken": 0.8, "perfectBlock": 0.65, "Blocked": 0.4 }
+    "strength": { "parry": 0.9, "heavy": 0.8, "guardBreak": 0.8, "perfectGuard": 0.65, "guard": 0.4 }
   },
   "trail": {
     "source": "src/fight/characters.ts:946",
