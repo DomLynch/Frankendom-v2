@@ -56,7 +56,7 @@ const input = createInput(controls);
 let loaded = 0;
 const started = performance.now();
 for (const [i, slot] of [[0, 'player'], [1, 'opponent']]) {
-  loadBody(clips, slot)
+  loadBody(clips, slot, params.get('body') || clips.bodySet)
     .then(async (body) => attachBody(views[i], body, await loadClips(clips, body), clips))
     .catch((e) => console.warn('body', slot, e))
     .finally(() => loaded++);
