@@ -118,7 +118,7 @@ export function createInput(def, el = document.body) {
   // GUARD, ROLL, KICK
   const btn = (id) => buttons.find((b) => b.id === id).el;
   let gp = null, rp = null;
-  const g = btn('guard'), r = btn('roll'), k = btn('kick');
+  const g = btn('guard'), r = btn('roll');
   g.addEventListener('pointerdown', (e) => {
     g.setPointerCapture(e.pointerId);
     g.classList.add('on');
@@ -160,8 +160,12 @@ export function createInput(def, el = document.body) {
   };
   r.addEventListener('pointerup', endRoll);
   r.addEventListener('pointercancel', endRoll);
-  k.addEventListener('pointerdown', () => { press('kick'); k.classList.add('on'); });
-  k.addEventListener('pointerup', () => k.classList.remove('on'));
+  for (const id of ['kick', 'special1', 'special2']) {
+    const b = btn(id);
+    b.addEventListener('pointerdown', () => { press(id); b.classList.add('on'); });
+    b.addEventListener('pointerup', () => b.classList.remove('on'));
+    b.addEventListener('pointercancel', () => b.classList.remove('on'));
+  }
 
   // ---- keyboard ----
   const K = def.keys, is = (code, act) => K[act].includes(code);
@@ -173,6 +177,8 @@ export function createInput(def, el = document.body) {
     else if (is(e.code, 'heavy')) { heavyKey = now(); s.holding = true; press('heavy'); }
     else if (is(e.code, 'thrust')) { s.holding = true; press('thrust'); }
     else if (is(e.code, 'kick')) press('kick');
+    else if (is(e.code, 'special1')) press('special1');
+    else if (is(e.code, 'special2')) press('special2');
     else if (is(e.code, 'guard')) { s.guard = 'thrust'; press('parry'); }
     else if (is(e.code, 'dodge')) {
       if (stickPushed()) press('dodge');

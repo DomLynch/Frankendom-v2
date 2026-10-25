@@ -7,12 +7,14 @@
   "buttons": [
     { "id": "guard", "label": "GUARD", "angle": 225, "sizePx": 50 },
     { "id": "roll", "label": "ROLL", "angle": 315, "sizePx": 50 },
-    { "id": "kick", "label": "KICK", "angle": 180, "sizePx": 44 }
+    { "id": "kick", "label": "KICK", "angle": 180, "sizePx": 44 },
+    { "id": "special1", "label": "POMMEL", "angle": 135, "sizePx": 50 },
+    { "id": "special2", "label": "CLEAVE", "angle": 45, "sizePx": 50 }
   ],
   "gapPx": 3,
   "keys": {
     "up": ["KeyW", "ArrowUp"], "down": ["KeyS", "ArrowDown"], "left": ["KeyA", "ArrowLeft"], "right": ["KeyD", "ArrowRight"],
     "run": ["ShiftLeft", "ShiftRight"], "light": ["KeyF"], "heavy": ["KeyG"], "thrust": ["KeyT"], "kick": ["KeyC"],
-    "dodge": ["KeyE"], "guard": ["KeyQ"]
+    "dodge": ["KeyE"], "guard": ["KeyQ"], "special1": ["Digit1"], "special2": ["Digit2"]
   }
 }
