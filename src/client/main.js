@@ -7,13 +7,14 @@ import { createInput } from './input.js';
 import { createFighterView, attachBody, drawFighter } from './render.js';
 import { createFx } from './fx.js';
 import { createSound } from './sound.js';
+import { createBlood } from './blood.js';
 import { loadBody, loadClips } from './assets.js';
 import { createSim } from '../sim/sim.js';
 import { createBrain, think } from '../sim/brain.js';
 
 const get = (f) => fetch(`./data/${f}.json`, { cache: 'no-cache' }).then((r) => r.json());
-const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specials, feelDef, soundDef] = await Promise.all(
-  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials', 'feel', 'sound'].map(get),
+const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specials, feelDef, soundDef, bloodDef] = await Promise.all(
+  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials', 'feel', 'sound', 'blood'].map(get),
 );
 const params = new URLSearchParams(location.search);
 const hitScale = params.has('hitstop') ? Number(params.get('hitstop')) : hitStop.scale;
@@ -50,6 +51,7 @@ newBout();
 const views = [createFighterView(scene, 0xb08a5a), createFighterView(scene, 0x7a5aa0)];
 const fx = createFx(scene, feelDef);
 const sound = createSound(soundDef);
+const blood = createBlood(scene, bloodDef);
 const input = createInput(controls);
 // the fight starts once both bodies are in, or after bodyWaitMs on capsules
 let loaded = 0;
@@ -112,10 +114,11 @@ function frame(t) {
       const me = sim.state.fighters[0];
       const events = sim.step([input.sample(cam.yaw, me), aiOff ? {} : think(brain, sim, 1)]);
       fx.onEvents(events, sim);
+      blood.onEvents(events, sim);
       sound.onTick(events, sim);
       const ms = stopMs(events);
       if (ms > 0) { frozenUntil = t + ms; acc = 0; break; }
-      if (sim.state.over && ++deadFor >= rules.death) newBout();
+      if (sim.state.over && ++deadFor >= rules.death) { newBout(); blood.clear(); }
     }
   }
   if (sim.state.over) {
@@ -123,6 +126,7 @@ function frame(t) {
     document.getElementById('msg').textContent = won ? 'Victory' : 'Defeat';
   }
   const feel = fx.update(dt, sim);
+  blood.update(dt);
   sim.state.fighters.forEach((f, i) => {
     drawFighter(views[i], f, sim, clips, dt, frozen);
     fx.applyPose(views[i], i, f);
