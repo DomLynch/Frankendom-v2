@@ -8,9 +8,10 @@
     { "id": "guard", "label": "GUARD", "angle": 225, "sizePx": 50 },
     { "id": "roll", "label": "ROLL", "angle": 315, "sizePx": 50 },
     { "id": "kick", "label": "KICK", "angle": 180, "sizePx": 44 },
-    { "id": "special1", "label": "POMMEL", "angle": 135, "sizePx": 50 },
-    { "id": "special2", "label": "CLEAVE", "angle": 45, "sizePx": 50 }
+    { "id": "special1", "label": "SPECIAL 1", "angle": 135, "sizePx": 50 },
+    { "id": "special2", "label": "SPECIAL 2", "angle": 45, "sizePx": 50 }
   ],
+  "ringLabels": { "up": "stab", "side": "slash" },
   "gapPx": 3,
   "keys": {
     "up": ["KeyW", "ArrowUp"], "down": ["KeyS", "ArrowDown"], "left": ["KeyA", "ArrowLeft"], "right": ["KeyD", "ArrowRight"],
