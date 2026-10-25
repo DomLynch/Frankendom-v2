@@ -6,6 +6,7 @@ These are V1's live duel rules restated for V2. The numbers live in data; this p
 - **Implementation:** `src/sim/sim.js`, the same module on the phone and the server.
 - **Units:** 1 tick = 1/60 s (`src/fight/sim.ts:2`).
 - **Golden rule:** no stat touches timing.
+- **Scope:** every row on this page is live from step 1. Dom asked for V1's full controls and feel with none of the bloat (25 Oct), and step 2's acceptance is that it feels identical to V1, which needs all of them. Step 2 is that feel check, not a later switch-on. What's left out of V2 is listed at the bottom.
 
 ## Tick order
 1. Actions are decided from the pre-tick state.
