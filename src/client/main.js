@@ -71,13 +71,18 @@ function updateCamera(dt) {
   const gap = Math.max(camDef.gapFloor, Math.hypot(q.x - p.x, q.z - p.z));
   const back = Math.max(camDef.back.floor, camDef.back.perGap * gap + camDef.back.base) * camDef.fightBack;
   const up = Math.max(camDef.height.floor, camDef.height.perGap * gap) * camDef.fightBack;
-  const yaw = Math.atan2(p.x - q.x, p.z - q.z);
+  // swung `orbit` rad around the player, so at close range the foe stays in view
+  const yaw = Math.atan2(p.x - q.x, p.z - q.z) + camDef.orbit;
   const k = cam.init ? 1 - Math.exp(-camDef.follow * dt) : 1;
   cam.yaw += Math.atan2(Math.sin(yaw - cam.yaw), Math.cos(yaw - cam.yaw)) * k;
   const sx = Math.sin(cam.yaw), sz = Math.cos(cam.yaw);
   // over the right shoulder, so the player never hides the foe
   const tPos = new THREE.Vector3(p.x + sx * back + sz * camDef.side, up, p.z + sz * back - sx * camDef.side);
-  const tLook = new THREE.Vector3((p.x + q.x) / 2 + sx * camDef.lookShift, camDef.lookY, (p.z + q.z) / 2 + sz * camDef.lookShift);
+  const tLook = new THREE.Vector3(
+    (p.x + q.x) / 2 + sx * camDef.lookShift + sz * camDef.lookSide,
+    camDef.lookY,
+    (p.z + q.z) / 2 + sz * camDef.lookShift - sx * camDef.lookSide,
+  );
   cam.pos.lerp(tPos, k);
   cam.look.lerp(tLook, k);
   cam.init = true;

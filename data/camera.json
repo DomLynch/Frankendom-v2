@@ -9,6 +9,8 @@
   "gapFloor": 0.8,
   "lookY": 0.8,
   "lookShift": 0.9,
-  "side": 0.7,
+  "side": 0,
+  "lookSide": 0,
+  "orbit": 0.58,
   "follow": 8
 }
