@@ -60,7 +60,8 @@ export function createInput(def, el = document.body) {
   const cx = () => innerWidth - sk.fromRightPx, cy = () => innerHeight - sk.fromBottomPx;
   const ring = document.createElement('div');
   ring.id = 'ring';
-  ring.innerHTML = '<b style="left:50%;top:4px;transform:translateX(-50%)">STAB</b><b style="left:6px;top:50%">CUT</b><b style="right:6px;top:50%">CUT</b>';
+  const rl = def.ringLabels;
+  ring.innerHTML = `<b style="left:50%;top:4px;transform:translateX(-50%)">${rl.up}</b><b style="left:6px;top:50%">${rl.side}</b><b style="right:6px;top:50%">${rl.side}</b>`;
   el.appendChild(ring);
   const mk = (id, label, size) => {
     const b = document.createElement('div');
