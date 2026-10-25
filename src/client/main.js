@@ -15,6 +15,7 @@ const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours] = awai
 const params = new URLSearchParams(location.search);
 const hitScale = params.has('hitstop') ? Number(params.get('hitstop')) : hitStop.scale;
 const brainRow = behaviours.brains.find((b) => b.id === (params.get('brain') || 'easy'));
+const aiOff = params.get('ai') === 'off';   // off switch: the opponent stands still
 fetch('./build.txt').then((r) => (r.ok ? r.text() : '')).then((t) => { document.getElementById('build').textContent = t.slice(0, 7); }).catch(() => {});
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -102,7 +103,7 @@ function frame(t) {
     while (acc >= STEP) {
       acc -= STEP;
       const me = sim.state.fighters[0];
-      const events = sim.step([input.sample(cam.yaw, me), think(brain, sim, 1)]);
+      const events = sim.step([input.sample(cam.yaw, me), aiOff ? {} : think(brain, sim, 1)]);
       const ms = stopMs(events);
       if (ms > 0) { frozenUntil = t + ms; acc = 0; break; }
       if (sim.state.over && ++deadFor >= rules.death) newBout();
