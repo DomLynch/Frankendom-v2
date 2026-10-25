@@ -117,8 +117,8 @@ export function drawFighter(view, f, sim, def, dt, frozen) {
   if (entry) {
     const { a, row, dur } = entry;
     if (pose.attack) {
-      const t = pose.attack, hit = row.hit ?? 0.46;
-      const frac = pose.age < t.windup ? (pose.age / t.windup) * hit : hit + ((pose.age - t.windup) / (t.active + t.recovery)) * (1 - hit);
+      const t = pose.attack, hit = row.hit ?? 0.46, s0 = row.start ?? 0;
+      const frac = pose.age < t.windup ? s0 + (pose.age / t.windup) * (hit - s0) : hit + ((pose.age - t.windup) / (t.active + t.recovery)) * (1 - hit);
       a.paused = true;
       a.time = Math.min(dur, frac * dur);
     } else if (pose.frac != null) {

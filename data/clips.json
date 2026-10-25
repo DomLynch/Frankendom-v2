@@ -1,5 +1,5 @@
 {
-  "about": "Bodies and clips, loaded at runtime from the OpenTrident library (never copied here). Bodies are the 106-joint MakeHuman set; clips are the library's per-clip GLBs (mixamorig bone names). Keys are the game's role names (Strategy 2026-10-25); values are clip ids picked by the OpenTrident Dev, to be checked on a body before they lock. `hit` = the clip fraction where the strike lands; the renderer stretches wind-up to it and the rest to recovery.",
+  "about": "Bodies and clips, loaded at runtime from the OpenTrident library (never copied here). Bodies are the 106-joint MakeHuman set; clips are the library's per-clip GLBs (mixamorig bone names). Keys are the game's role names (Strategy 2026-10-25); values are clip ids picked by the OpenTrident Dev, to be checked on a body before they lock. `start` / `hit` = clip fractions where the swing starts and where it strikes, measured on mh-male-01 from the right hand's speed relative to the hips (start: first frame over 25 % of peak; hit: peak; the foot for Kick). The renderer maps the sim's wind-up onto start..hit (skipping the flat lead-in, V1's start offsets) and active+recovery onto hit..end.",
   "base": "https://opentrident.org/models/",
   "bodies": {
     "player": "makehuman/mh-male-01.glb",
@@ -22,11 +22,11 @@
     "BlockImpact": { "file": "mixamo/clips/122380901-great-sword-blocking.glb" },
     "Parry":       { "file": "mixamo/clips/hs/hs009-parry-half-sword-c.glb" },
     "Deflected":   { "file": "mixamo/clips/hs/hs048-wound-upper-w-b.glb" },
-    "Attack":      { "file": "mixamo/clips/gladio/gl047-thracian-sword-right-side-slash.glb", "hit": 0.46 },
-    "Return":      { "file": "mixamo/clips/gladio/gl023-thracian-sword-left-side-slash.glb", "hit": 0.46 },
-    "Heavy":       { "file": "mixamo/clips/gladio/gl046-gladius-right-overhead-slash.glb", "hit": 0.46 },
-    "Thrust":      { "file": "mixamo/clips/hs/hs039-thrust-two-handed-r_c.glb", "hit": 0.46 },
-    "Kick":        { "file": "mixamo/clips/hs/hs066-kick-right.glb", "hit": 0.46 },
+    "Attack":      { "file": "mixamo/clips/gladio/gl047-thracian-sword-right-side-slash.glb", "start": 0.011, "hit": 0.438 },
+    "Return":      { "file": "mixamo/clips/gladio/gl023-thracian-sword-left-side-slash.glb", "start": 0.101, "hit": 0.438 },
+    "Heavy":       { "file": "mixamo/clips/gladio/gl046-gladius-right-overhead-slash.glb", "start": 0.25, "hit": 0.4 },
+    "Thrust":      { "file": "mixamo/clips/hs/hs039-thrust-two-handed-r_c.glb", "start": 0.038, "hit": 0.833 },
+    "Kick":        { "file": "mixamo/clips/hs/hs066-kick-right.glb", "start": 0.244, "hit": 0.289 },
     "Roll":        { "file": "mixamo/clips/gladio/gl015-dodge-roll.glb" },
     "Hit":         { "file": "mixamo/clips/hs/hs047-wound-upper-w-f.glb" },
     "Death":       { "file": "mixamo/clips/gladio/gl012-death-with-weapon.glb" }
