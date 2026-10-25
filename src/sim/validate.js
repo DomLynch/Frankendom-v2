@@ -80,7 +80,7 @@ export function validateAll(files) {
   }
   // the one-mold rule: every body set names its rig, and the default set is the 106-joint rig
   if (clips?.bodySets) {
-    for (const [k, v] of Object.entries(clips.bodySets)) if (k !== 'about' && v.rig == null) errors.push(`clips.bodySets.${k}: name its rig`);
+    for (const [k, v] of Object.entries(clips.bodySets)) if (k !== 'about' && v.rig !== 106) errors.push(`clips.bodySets.${k}: every body must be on the 106-joint rig (rig: ${v.rig})`);
     if (clips.bodySets[clips.bodySet]?.rig !== 106) errors.push(`clips.bodySet "${clips.bodySet}": the default bodies must be on the 106-joint rig`);
   }
   const units = files['fighter-plain']?.units;

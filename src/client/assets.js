@@ -20,7 +20,10 @@ const once = (url) => {
 };
 
 export async function loadBody(def, slot, set = def.bodySet) {
-  const g = await once(def.base + (def.bodySets[set] || def.bodySets[def.bodySet])[slot]);
+  // the one-mold rule: only 106-joint bodies; anything else (or an unknown name) falls back to the default set
+  const pick = def.bodySets[set]?.rig === 106 ? def.bodySets[set] : def.bodySets[def.bodySet];
+  if (pick !== def.bodySets[set]) console.warn(`body set "${set}" is not on the 106-joint rig; using "${def.bodySet}"`);
+  const g = await once(def.base + pick[slot]);
   const root = cloneSkinned(g.scene);
   const hide = new RegExp(def.hideMeshes);
   root.traverse((o) => {
