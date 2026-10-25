@@ -9,7 +9,7 @@
   "bodyWaitMs": 8000,
   "sword": { "length": 1.0, "handle": 0.12 },
   "roles": {
-    "Armed":       { "file": "mixamo/clips/hs/hs001-idle-half-sword.glb", "loop": true },
+    "Armed":       { "file": "mixamo/clips/gladio/gl055-sword-and-shield-guard-idle.glb", "loop": true },
     "ArmedWalk":   { "file": "mixamo/clips/124540901-walk.glb", "loop": true, "speed": 1.679 },
     "StrafeLeft":  { "file": "mixamo/clips/117610901-left-strafe.glb", "loop": true, "speed": 3.6 },
     "StrafeRight": { "file": "mixamo/clips/117610902-right-strafe.glb", "loop": true, "speed": 3.6 },

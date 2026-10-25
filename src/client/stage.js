@@ -51,6 +51,7 @@ export function createStage(renderer, def) {
     ruler.add(t);
   }
   ruler.position.x = r.x;
+  ruler.visible = r.show !== false;   // the viewer's height ruler; hidden in a fight (Lead's playtest)
   scene.add(ruler);
 
   return scene;

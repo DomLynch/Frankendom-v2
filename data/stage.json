@@ -4,7 +4,7 @@
   "fog": { "near": 40, "far": 120 },
   "ground": { "size": 400, "color": "#6b655f" },
   "grid": { "size": 80, "divisions": 80, "center": "#857d75", "lines": "#7a736c" },
-  "ruler": { "height": 1.8, "tick": 0.1, "color": "#ffd166", "x": -2.9 },
+  "ruler": { "show": false, "height": 1.8, "tick": 0.1, "color": "#ffd166", "x": -2.9 },
   "light": {
     "exposure": 1.25,
     "environment": 0.85,
