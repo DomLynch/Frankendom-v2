@@ -22,6 +22,7 @@ export const SCHEMA = {
   'move-defs': { keys: ['about', 'moves', 'paths'], rows: { moves: MOVE_KEYS, paths: ['id', 'clip', 'source', 'windup', 'active', 'recovery'] } },
   'rules': { keys: ['about', 'tickHz', 'health', 'death', 'stamina', 'guard', 'parry', 'feint', 'roll', 'backstep', 'posture', 'counter',
     'rear', 'stopHit', 'charge', 'buffer', 'stepInFrom', 'turn', 'kickArc', 'hitArc', 'cleanDrain', 'exhaustedHitStun', 'move', 'body'] },
+  'sound': { keys: ['about', 'spriteSeconds', 'files', 'mix', 'events', 'synth', 'sprite'] },
   'specials': { keys: ['about', 'cooldown', 'slots'], rows: { slots: ['press', 'skill', 'move', 'name'] } },
   'stage': { keys: ['source', 'sky', 'fog', 'ground', 'grid', 'ruler', 'light'] },
 };

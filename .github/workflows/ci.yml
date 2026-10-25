@@ -37,7 +37,7 @@ jobs:
       - name: Assemble site
         run: |
           mkdir -p site
-          cp -r index.html src data site/
+          cp -r index.html src data assets site/
           echo "${GITHUB_SHA}" > site/build.txt
       - name: Publish
         run: |
