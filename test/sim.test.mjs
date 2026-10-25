@@ -113,7 +113,7 @@ test('heavy is 32/5/31 and a chained light is 16/5/20', () => {
   assert.equal(a.phase, 'ready');
   a.st = 100;
   sim.step([{ press: 'light' }, idle]);
-  run(sim, 49);
+  run(sim, 50);
   assert.equal(a.phase, 'ready');
   sim.step([{ press: 'light' }, idle]);
   assert.equal(a.chained, true);

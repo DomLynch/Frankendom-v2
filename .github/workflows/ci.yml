@@ -44,7 +44,7 @@ jobs:
         if: steps.gate.outputs.go == '1'
         run: |
           mkdir -p _site
-          cp src/client/index.html _site/index.html
+          cp index.html _site/index.html
           cp -r src data _site/
           echo "${GITHUB_SHA}" > _site/build.txt
       - name: Publish

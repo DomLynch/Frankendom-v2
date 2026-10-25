@@ -1,0 +1,14 @@
+{
+  "about": "Fight camera, V1 lock-on (RPG-game trunk src/fight/camera.ts:43-91, camera-rules-defs.json, scene.ts:160). Behind the player, looking at the fighters' midpoint.",
+  "fov": 51,
+  "near": 0.1,
+  "far": 180,
+  "back": { "floor": 4.2, "perGap": 0.62, "base": 2.8 },
+  "height": { "floor": 3.2, "perGap": 1.3 },
+  "fightBack": 1.3,
+  "gapFloor": 0.8,
+  "lookY": 0.8,
+  "lookShift": 0.9,
+  "side": 0.7,
+  "follow": 8
+}
