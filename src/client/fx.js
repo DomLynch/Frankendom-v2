@@ -83,16 +83,16 @@ export function createFx(scene, def) {
           if (!e.poised) flinch(e.d, c.dir, kill, e.d === 0);
           if (e.d === 0) hurtFlash = def.hurtFlashMs / 1000;
         } else if (e.t === 'Blocked') {
-          shove(heavy ? K.heavyBlock : e.perfect ? K.perfectBlock : K.block, c.dir);
-          clash(c.p, c.dir, e.perfect ? def.sparks.strength.perfectBlock : heavy ? def.sparks.strength.heavyHit : def.sparks.strength.Blocked);
-          spray(c.p, c.dir, 4, def.dots.color.block, def.dots.size.other, def.dots.life.other, def.dots.speed);
+          shove(heavy ? K.heavyGuard : e.perfect ? K.perfectGuard : K.guard, c.dir);
+          clash(c.p, c.dir, e.perfect ? def.sparks.strength.perfectGuard : heavy ? def.sparks.strength.heavy : def.sparks.strength.guard);
+          spray(c.p, c.dir, 4, def.dots.color.guard, def.dots.size.other, def.dots.life.other, def.dots.speed);
           body[e.d].block = { dir: c.dir, t: 0, k: heavy ? def.blockRecoil.heavy : 1 };
         } else if (e.t === 'Parried') {
           shove(K.parry, c.dir);
-          clash(c.p, c.dir, def.sparks.strength.Parried);
+          clash(c.p, c.dir, def.sparks.strength.parry);
         } else if (e.t === 'GuardBroken') {
           shove(K.guardBreak, c.dir);
-          clash(c.p, c.dir, def.sparks.strength.GuardBroken);
+          clash(c.p, c.dir, def.sparks.strength.guardBreak);
           spray(c.p, c.dir, def.dots.count, def.dots.color.flesh, def.dots.size.flesh, def.dots.life.flesh, def.dots.speed);
           flinch(e.d, c.dir, false, e.d === 0);
         } else if (e.t === 'Killed') {
