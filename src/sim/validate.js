@@ -78,6 +78,11 @@ export function validateAll(files) {
       for (const r of typeof role === 'string' ? [role] : Object.values(role)) if (!clips.roles[r]) errors.push(`clips.states.${state}: no role "${r}"`);
     }
   }
+  // the one-mold rule: every body set names its rig, and the default set is the 106-joint rig
+  if (clips?.bodySets) {
+    for (const [k, v] of Object.entries(clips.bodySets)) if (k !== 'about' && v.rig == null) errors.push(`clips.bodySets.${k}: name its rig`);
+    if (clips.bodySets[clips.bodySet]?.rig !== 106) errors.push(`clips.bodySet "${clips.bodySet}": the default bodies must be on the 106-joint rig`);
+  }
   const units = files['fighter-plain']?.units;
   if (units) for (const u of SIX_UNITS) if (!units[u] || !Array.isArray(units[u].gear)) errors.push(`fighter-plain.units.${u}: every fighter has six units with a gear list`);
   return errors;

@@ -28,6 +28,12 @@ test('an armour block or immune field is rejected anywhere', () => {
   assert.match(errs, /units\.head\.immune: armour may not block/);
 });
 
+test('the default bodies must be on the 106-joint rig', () => {
+  const bad = { ...files, clips: clone(files.clips) };
+  bad.clips.bodySet = 'mixamo';
+  assert.match(validateAll(bad).join('\n'), /default bodies must be on the 106-joint rig/);
+});
+
 test('broken links between files are rejected', () => {
   const bad = { ...files, specials: clone(files.specials), clips: clone(files.clips), 'move-defs': clone(files['move-defs']) };
   bad.specials.slots[0].move = 'skill_nothing';
