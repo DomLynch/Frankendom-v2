@@ -1,13 +1,13 @@
 {
   "about": "Bodies and clips, loaded at runtime from the OpenTrident library (never copied here). Bodies are the 106-joint MakeHuman set; clips are the library's per-clip GLBs (mixamorig bone names). Keys are the game's role names (Strategy 2026-10-25); values are clip ids picked by the OpenTrident Dev, to be checked on a body before they lock. `start` / `hit` = clip fractions where the swing starts and where it strikes, measured on mh-male-01 from the right hand's speed relative to the hips (start: first frame over 25 % of peak; hit: peak; the foot for Kick). The renderer maps the sim's wind-up onto start..hit (skipping the flat lead-in, V1's start offsets) and active+recovery onto hit..end.",
   "base": "https://opentrident.org/models/",
-  "bodySet": "mixamo",
+  "bodySet": "makehuman",
   "bodySets": {
-    "about": "Dom 2026-10-25: the default pair is two polished, armoured Mixamo characters from the OpenTrident library (mixamorig bones, the same library clips play on them); ?body=makehuman brings back the 106-joint MakeHuman pair (the opponent crowd when the parts mechanic lands).",
-    "mixamo": { "player": "mixamo/phone/knight-d-pelegrini.glb", "opponent": "mixamo/phone/paladin-j-nordstrom.glb" },
-    "makehuman": { "player": "makehuman/mh-male-01.glb", "opponent": "makehuman/mh-woman-02.glb" }
+    "about": "Dom 2026-10-25, the one-mold rule: V2 ships only bodies on the 106-joint rig, so the default set must have rig 106 (the validator enforces it). The MakeHuman pair wears its own armour layers (tunic, helmet, bracers, greaves); only its loose sword and scabbard are hidden. ?body=mixamo shows the Mixamo knights (54-57 bone mixamorig skeleton) until the OpenTrident factory converts them to 106.",
+    "makehuman": { "rig": 106, "player": "makehuman/mh-male-01.glb", "opponent": "makehuman/mh-woman-02.glb" },
+    "mixamo": { "rig": "mixamorig-54", "player": "mixamo/phone/knight-d-pelegrini.glb", "opponent": "mixamo/phone/paladin-j-nordstrom.glb" }
   },
-  "hideMeshes": "^Layer_",
+  "hideMeshes": "^Layer_(Sword|Scabbard)",
   "guardTilt": {
     "about": "V1 characters.ts:434-437 GUARD_TILT: one Guard clip, the side shown by radians added after the mixer: torso yaw (spine_01 -> mixamorigSpine, y), sword-arm pitch (upperarm_r -> mixamorigRightArm, x), chest pitch (spine_02 -> mixamorigSpine1, x)",
     "bones": { "yaw": "mixamorigSpine", "arm": "mixamorigRightArm", "spine": "mixamorigSpine1" },
