@@ -2,6 +2,7 @@
 // accumulator; the renderer interpolates nothing and only reads state.
 import * as THREE from 'three';
 import { createStage } from './stage.js';
+import { lockPageZoom, viewW, viewH } from './zoom-guard.js';
 import { createInput } from './input.js';
 import { createFighterView, attachBody, drawFighter } from './render.js';
 import { loadBody, loadClips } from './assets.js';
@@ -20,13 +21,15 @@ fetch('./build.txt').then((r) => (r.ok ? r.text() : '')).then((t) => { document.
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(innerWidth, innerHeight);
+lockPageZoom();
+// the stylesheet owns the canvas box (fixed, full screen); the renderer only sizes its drawing buffer to the layout viewport
+renderer.setSize(viewW(), viewH(), false);
 document.body.prepend(renderer.domElement);
 const scene = createStage(renderer, stage);
-const camera = new THREE.PerspectiveCamera(camDef.fov, innerWidth / innerHeight, camDef.near, camDef.far);
+const camera = new THREE.PerspectiveCamera(camDef.fov, viewW() / viewH(), camDef.near, camDef.far);
 addEventListener('resize', () => {
-  renderer.setSize(innerWidth, innerHeight);
-  camera.aspect = innerWidth / innerHeight;
+  renderer.setSize(viewW(), viewH(), false);
+  camera.aspect = viewW() / viewH();
   camera.updateProjectionMatrix();
 });
 

@@ -6,6 +6,7 @@
 //   ROLL:   tap = backstep (a roll if the stick is pushed), hold = roll
 //   KICK
 // Presses are edges: the next sim tick takes each one exactly once.
+import { viewW, viewH } from './zoom-guard.js';
 
 export function createInput(def, el = document.body) {
   const now = () => performance.now();
@@ -30,7 +31,7 @@ export function createInput(def, el = document.body) {
     place(base, x, y, st.radiusPx * 2);
     place(knob, x, y, st.knobPx);
   };
-  const rest = () => showStick(st.restFromLeftPx, innerHeight - st.restFromBottomPx);
+  const rest = () => showStick(st.restFromLeftPx, viewH() - st.restFromBottomPx);
   rest();
   addEventListener('resize', () => s.stick.id === null && rest());
   zone.style.bottom = Math.max(0, st.bottomMinPx - 56) + 'px';
@@ -57,7 +58,7 @@ export function createInput(def, el = document.body) {
 
   // ---- right cluster ----
   const sk = def.strike;
-  const cx = () => innerWidth - sk.fromRightPx, cy = () => innerHeight - sk.fromBottomPx;
+  const cx = () => viewW() - sk.fromRightPx, cy = () => viewH() - sk.fromBottomPx;
   const ring = document.createElement('div');
   ring.id = 'ring';
   const rl = def.ringLabels;
