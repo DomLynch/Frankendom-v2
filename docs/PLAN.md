@@ -84,4 +84,6 @@ One clip for Dom.
 - **No bundler.** Plain ES modules with an import map. Three.js is pinned to one exact version.
 - **Node 22 LTS** in CI and on the VPS.
 - **Bodies and clips:** one Mixamo character plus its phone GLB from the OpenTrident `mixamo` library. I'll confirm the canonical served path with the OpenTrident Dev before step 1. My local checkout holds only the index, not the clip files.
-- **Rig check:** the brief says 106 joints, but `mixamo-index.json` lists the Mixamo characters at 68 bones. I'll ask the OpenTrident Dev which body is the canonical 106-joint one before loading anything.
+- **Rig check:** my local `mixamo-index.json` still lists the Mixamo characters at 68 bones. I'll confirm with the OpenTrident Dev that every served body is on the 106-joint rig before step 1 loads one.
+
+**Rig: ONLY the OpenTrident 106-joint rig, from the OpenTrident library, for every body and clip** (Mixamo, MakeHuman, factory bodies, the ~2,500 Mixamo clips, the Hellish Quart clips). Never Frankendom's 65-bone rig, bodies, models or animation folders. From the old game we take only the data files named above.
