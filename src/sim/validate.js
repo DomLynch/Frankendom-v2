@@ -14,7 +14,7 @@ const BRAIN_KEYS = ['id', 'reaction', 'accuracy', 'parry', 'dodge', 'aggression'
 export const SCHEMA = {
   'blood': { keys: ['about', 'spray', 'floor'] },
   'behaviours': { keys: ['about', 'brains'], rows: { brains: BRAIN_KEYS } },
-  'camera': { keys: ['about', 'fov', 'near', 'far', 'follow', 'portrait', 'landscape', 'fighterSize', 'orbit', 'orbitNote'] },
+  'camera': { keys: ['about', 'fov', 'near', 'far', 'follow', 'portrait', 'landscape', 'fighterSize', 'orbit', 'orbitNote', 'kill'] },
   'clips': { keys: ['about', 'base', 'bodies', 'hideMeshes', 'bodyWaitMs', 'sword', 'roles', 'states', 'paths'] },
   'controls': { keys: ['about', 'stick', 'strike', 'guard', 'dodge', 'buttons', 'ringLabels', 'gapPx', 'keys'], rows: { buttons: ['id', 'label', 'angle', 'sizePx'] } },
   'feel': { keys: ['about', 'cameraKick', 'flinch', 'hurtRecoil', 'blockRecoil', 'killDip', 'hurtFlashMs', 'dots', 'sparks', 'trail'] },
