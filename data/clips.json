@@ -3,9 +3,8 @@
   "base": "https://opentrident.org/models/",
   "bodySet": "makehuman",
   "bodySets": {
-    "about": "Dom 2026-10-25, the one-mold rule: V2 ships only bodies on the 106-joint rig, so the default set must have rig 106 (the validator enforces it). The MakeHuman pair wears its own armour layers (tunic, helmet, bracers, greaves); only its loose sword and scabbard are hidden. ?body=mixamo shows the Mixamo knights (54-57 bone mixamorig skeleton) until the OpenTrident factory converts them to 106.",
-    "makehuman": { "rig": 106, "player": "makehuman/mh-male-01.glb", "opponent": "makehuman/mh-woman-02.glb" },
-    "mixamo": { "rig": "mixamorig-54", "player": "mixamo/phone/knight-d-pelegrini.glb", "opponent": "mixamo/phone/paladin-j-nordstrom.glb" }
+    "about": "Dom 2026-10-25, the one-mold rule: V2 loads only bodies on the 106-joint rig. Every set names its rig; the validator fails CI on any set that isn't 106, and the loader refuses one too (falling back to the default). The MakeHuman pair wears its own armour layers; only its loose sword and scabbard are hidden. The Mixamo knights return as a set here once OpenTrident's V2 tab has them converted to 106.",
+    "makehuman": { "rig": 106, "player": "makehuman/mh-male-01.glb", "opponent": "makehuman/mh-woman-02.glb" }
   },
   "hideMeshes": "^Layer_(Sword|Scabbard)",
   "guardTilt": {

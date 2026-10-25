@@ -30,8 +30,11 @@ test('an armour block or immune field is rejected anywhere', () => {
 
 test('the default bodies must be on the 106-joint rig', () => {
   const bad = { ...files, clips: clone(files.clips) };
+  bad.clips.bodySets.mixamo = { rig: 'mixamorig-54', player: 'a.glb', opponent: 'b.glb' };
   bad.clips.bodySet = 'mixamo';
-  assert.match(validateAll(bad).join('\n'), /default bodies must be on the 106-joint rig/);
+  const errs = validateAll(bad).join('\n');
+  assert.match(errs, /default bodies must be on the 106-joint rig/);
+  assert.match(errs, /bodySets\.mixamo: every body must be on the 106-joint rig/);
 });
 
 test('broken links between files are rejected', () => {
