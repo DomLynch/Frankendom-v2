@@ -2,11 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Frankendom V2</title>
 <style>
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #9db7d6; touch-action: none; user-select: none; -webkit-user-select: none; font: 12px system-ui, sans-serif; }
-  canvas { display: block; }
+  /* the fight is a game surface, not a document: every browser gesture is refused (V1 style.css:1-5) */
+  :root { touch-action: none; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #9db7d6; touch-action: none; user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; font: 12px system-ui, sans-serif; }
+  canvas { display: block; position: fixed; inset: 0; width: 100%; height: 100%; }
   #hud { position: fixed; top: max(8px, env(safe-area-inset-top)); left: 12px; right: 12px; display: flex; justify-content: space-between; gap: 16px; pointer-events: none; }
   .side { flex: 1; max-width: 160px; }
   .side.right { text-align: right; }
