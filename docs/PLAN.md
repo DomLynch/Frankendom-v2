@@ -36,7 +36,8 @@ src/sim/                pure, shared phone + Node
   combat.js             reach test, guard side, parry, riposte, hit-stun, hit-stop, part damage
   validate.js           data validator (closed key sets, block-field lint)
 src/client/
-  index.html, main.js   Three.js scene: flat floor, camera at the fight framing, 375-wide first
+  index.html, main.js   boots the stage and the fight camera at 375 wide
+  stage.js              the OpenTrident viewer scene, reused: grid floor, plain blue sky, height ruler (values in data/stage.json)
   input.js              thumb controls -> intents
   render.js             events -> body pose, clip playback, hit-stop freeze
   assets.js             loads the body GLB and clips from the OpenTrident library (read, never copied in)
@@ -54,6 +55,11 @@ test/
 .github/workflows/ci.yml
 ```
 
+## Stage and combat spec
+
+- **Stage:** exactly the OpenTrident viewer scene: flat grid floor, plain blue sky, a height ruler, two bodies, nothing else. Source: `opentrident-steam/site/index.html`, lines 129-181 at b3c8bf0 (sky `0x9db7d6`, an 80 m GridHelper, a 1.8 m ruler with 10 cm ticks). It gets lifted into `stage.js`, with its numbers in `data/stage.json`. No arena, backgrounds or art until the combat is maxed out. Graphics come last.
+- **Combat spec:** the Frankendom Lead's one page, `frankendom-lead-catalogue/docs/v2/controls-and-combat-for-v2.md` (pending), read together with `data/move-defs.json`. It covers the thumb controls, slash forward, parry, riposte, roll, hit-stun, the hit-stop table, the 375 fight camera and which clip families the old game used. `docs/RULES.md` and `data/rules.json` / `controls.json` get written from that page, not re-derived from Frankendom's code.
+
 ## The four steps
 
 **1. Two fighters, one sword, on the phone.**
@@ -61,7 +67,7 @@ Create `src/sim/` (sim, rng, fighter, moves, the basic parts of combat), `data/m
 Delivered to a VPS preview path. Dom plays it at 375 wide. One still for Dom.
 
 **2. The feel: parry, riposte, roll, hit-stun, hit-stop.**
-Write `docs/RULES.md` from Frankendom's combat code, then `data/rules.json`, and extend `combat.js` and `moves.js`. Hit-stop is a sim event the renderer obeys, so the sim never pauses.
+Write `docs/RULES.md` from the Lead's controls-and-combat page, then `data/rules.json`, and extend `combat.js` and `moves.js`. Hit-stop is a sim event the renderer obeys, so the sim never pauses.
 Acceptance: a two-minute side by side on Dom's phone where V2's light attack feels identical to V1's. One clip for Dom.
 
 **3. Live: the sim on the server, one zone, one opponent, two phones.**
