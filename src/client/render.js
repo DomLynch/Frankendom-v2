@@ -36,16 +36,37 @@ export function attachBody(view, body, clips, def) {
     a.clampWhenFinished = true;
     view.actions[role] = { a, row, dur: clip.duration };
   }
-  const hand = body.getObjectByName('mixamorigRightHand');
-  if (hand) {
-    // a plain blade on the hand bone; the grip is a first guess
-    const s = 1 / (hand.getWorldScale(new THREE.Vector3()).x || 1);
-    const sword = view.blade.clone();
-    sword.geometry = new THREE.BoxGeometry(0.035, 0.95, 0.02);
-    sword.position.set(0, 0.5, 0.03).multiplyScalar(s);
-    sword.scale.setScalar(s);
-    hand.add(sword);
+  const grip = handGrip(body);
+  if (grip) {
+    // a plain blade gripped across the palm, from the pinky side toward the index side
+    const sword = new THREE.Mesh(new THREE.BoxGeometry(0.035, def.sword.length, 0.012), view.blade.material);
+    sword.position.y = def.sword.length / 2 - def.sword.handle;
+    sword.castShadow = true;
+    grip.holder.add(sword);
   }
+}
+
+// the world-space hand frame at bind pose, turned into a holder on the hand bone whose +Y is the blade
+function handGrip(body) {
+  body.updateMatrixWorld(true);
+  const bone = (n) => body.getObjectByName('mixamorig' + n);
+  const hand = bone('RightHand'), idx = bone('RightHandIndex1'), mid = bone('RightHandMiddle1'), pin = bone('RightHandPinky1');
+  if (!hand || !idx || !mid || !pin) return null;
+  const at = (o) => o.getWorldPosition(new THREE.Vector3());
+  const hp = at(hand), mp = at(mid);
+  const finger = mp.clone().sub(hp).normalize();
+  const y = at(idx).sub(at(pin)).normalize();
+  const x = finger.clone().sub(y.clone().multiplyScalar(finger.dot(y))).normalize();
+  const z = new THREE.Vector3().crossVectors(x, y);
+  const normal = new THREE.Vector3().crossVectors(finger, y).normalize();
+  const boneQ = hand.getWorldQuaternion(new THREE.Quaternion()).invert();
+  const scale = hand.getWorldScale(new THREE.Vector3()).x || 1;
+  const holder = new THREE.Group();
+  holder.quaternion.copy(boneQ).multiply(new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z)));
+  holder.position.copy(hp.clone().lerp(mp, 0.7).add(normal.multiplyScalar(-0.012)).sub(hp).applyQuaternion(boneQ).divideScalar(scale));
+  holder.scale.setScalar(1 / scale);
+  hand.add(holder);
+  return { holder };
 }
 
 function roleFor(f, sim, def) {
