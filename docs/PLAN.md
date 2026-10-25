@@ -1,5 +1,34 @@
 # Frankendom V2: build plan
 
+## HANDOFF (2026-10-25 night, Dom stopped work for a handover)
+
+**Live build:** https://v2.frankendom.com at **0ecd2d7**.
+- Every green main deploys itself and is checked against `build.txt`.
+- Code is served under `/b/<sha>/`, so phones never run cached modules.
+- Merge only when `gh pr checks` shows `test pass`.
+- Stills at 375 go in the PR body for anything visible.
+
+**What's live:**
+- V1's controls, timings and rules: `test/v1-parity.test.mjs`, 24 rows that match V1.
+- V1's specials: SPECIAL 1 Skull Crack, SPECIAL 2 Whirlwind.
+- V1's feel layer: camera kick, flinch, sparks, trail, blood, the sound sprite and cues, the kill cam and result card.
+- V1's live Origins fight camera.
+- The iOS zoom guard and the iOS sound fix.
+- Armoured MakeHuman pair on the 106-joint rig. The one-mold lock is enforced by CI and by the loader.
+
+**In flight:** nothing. The working tree is clean.
+
+**Next three:**
+1. When OpenTrident sends the converted Knight and Paladin (106 rig, its new V2 tab), add them as a `rig: 106` set in `data/clips.json` and make it the default.
+2. Use OpenTrident's victim reaction clips for a landed special: 116900902 big-hit-to-head for Skull Crack, 116880906 big-side-hit for Whirlwind.
+3. Finishers: Decapitation and Split Crown. These are victim-only clips at `models/finishers-preview/clips/9100001-…` and need V1's `severed-head.ts` and `finisher-blood.ts` ported. Then wounds below 60 % HP, sand puffs, a real sword model, and V1's labelled HUD.
+
+**Open questions:**
+- **Dom's phone:** has he heard sound since the #26 fix and the #29 cache fix? He needs to hard-refresh once.
+- **OpenTrident:** paths for the converted pair. Finisher placement and strike times weren't measured.
+- **Lead:** no open asks. The "facing away" report was withdrawn; it came from a stale hidden pane.
+- **Physics:** not started. It's step 4 and waits on OpenTrident's Jolt M3 proof.
+
 Written 2026-10-25 from the Strategy brief (`frankendom-strategy/docs/FRANKENDOM-V2-DEV-BRIEF-2026-10-25.md`, commit d26d1aedd) and the core spec (`COMBAT-101-TOP-25-2026-10-25.md`). Nothing is built until Dom says go.
 
 ## What it is
