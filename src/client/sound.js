@@ -3,7 +3,7 @@
 // iOS only allows audio after a touchend, click or keydown (V1 main.ts ~l.100), so the context starts there.
 const HEAVY = new Set(['heavy_overhead', 'heavy_riposte', 'heavy_counter', 'critical', 'skill_cleave']);
 
-export function createSound(def, base = './') {
+export function createSound(def, specials, base = './') {
   let ctx = null, buffer = null, master = null, room = null;
   const voices = [];
   const last = {};   // cue -> last variant index, so a variant never repeats back to back
@@ -123,9 +123,12 @@ export function createSound(def, base = './') {
         if (p.phase === 'attack' && f.phase === 'ready' && p.landed === false) keys.push('whiff');
         prev[i] = { phase: f.phase, landed: f.landed };
       });
-      const cues = keys.flatMap((k) => def.events[k] || []).slice(0, kill ? def.mix.maxOnKill : def.mix.maxPerTick);
+      // specials: V1's specialSound rows, the start rows on the cast, the rest on the landed blow
+      const special = events.flatMap((e) => (e.t === 'SpecialStarted' ? specials.sounds[e.skill]?.start || []
+        : e.t === 'SpecialLanded' ? specials.sounds[e.skill]?.land || [] : []));
+      const cues = [...special, ...keys.flatMap((k) => def.events[k] || [])].slice(0, kill ? def.mix.maxOnKill : def.mix.maxPerTick);
       cues.forEach(play);
-      if (events.some((e) => e.t === 'Hit')) synth(def.synth.hit);
+      if (events.some((e) => e.t === 'Hit' || e.t === 'SpecialLanded')) synth(def.synth.hit);
       if (kill) synth(def.synth.kill);
     },
   };
