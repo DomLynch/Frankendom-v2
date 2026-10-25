@@ -51,7 +51,7 @@ docs/
 test/
   data.test.mjs         every data file parses and validates
   determinism.test.mjs  same seed + same intent stream -> byte-identical event log
-  timing.test.mjs       light attack 20/8/22, heavy 32/5/31, roll 36 with i-frames 4-20
+  v1-parity.test.mjs    the sim, measured by input scripts, against V1 live (light 20/5/25, heavy 32/5/31, roll 36 with i-frames 4-20, ...)
 .github/workflows/ci.yml
 ```
 

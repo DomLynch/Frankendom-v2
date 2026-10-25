@@ -37,7 +37,7 @@ function makeFighter(R, x, z, heading) {
     x, z, heading,
     hp: R.health, st: R.stamina.max, posture: 0, postureHold: 0, rest: 0, exhausted: false,
     phase: 'ready', age: 0, fresh: false, stun: 0, hurtKind: null, chainFrom: null,
-    move: null, chained: false, landed: false, parked: 0, charged: false, whiffHang: 0,
+    move: null, chained: false, landed: false, parked: 0, charged: false, whiffHang: 0, hung: false,
     guardSide: null, parrying: false, parryCd: 0, exposed: 0, specialCd: [0, 0],
     punish: 0, punishKind: null, counterWindow: 0, chainWindow: 0, lastLight: 'left', evadeEnd: 99,
     buffer: null, rollX: 0, rollZ: 0, speed: 0, moved: 0, sprinted: false,
@@ -222,6 +222,7 @@ function startAttack(f, foe, moveId, moves, R, events, i) {
   f.parked = 0;
   f.charged = false;
   f.whiffHang = 0;
+  f.hung = false;
   f.parrying = false;
   f.guardSide = null;
   f.heading = turnToward(f.heading, angleTo(f, foe), R.turn.start);
@@ -335,7 +336,8 @@ function contact(att, def, A, D, ai, moves, R, events) {
   if (A.age < t.windup || A.age >= t.windup + t.active) return;
   const arc = m.id === 'kick' ? R.kickArc : R.hitArc;
   if (dist(A, D) > m.reach || offFacing(A, D) > arc) {
-    if (m.id === 'thrust' && A.age === t.windup + t.active - 1 && att.whiffHang === 0) att.whiffHang = R.stopHit.whiff;
+    // a whiffed thrust hangs once at full extension (it used to re-arm every time the hang ran out, so it never recovered)
+    if (m.id === 'thrust' && A.age === t.windup + t.active - 1 && !att.hung) { att.whiffHang = R.stopHit.whiff; att.hung = true; }
     return;
   }
   att.landed = true;
