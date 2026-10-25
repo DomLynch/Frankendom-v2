@@ -6,6 +6,7 @@
     "opponent": "makehuman/mh-woman-02.glb"
   },
   "hideMeshes": "^Layer_",
+  "bodyWaitMs": 8000,
   "sword": { "length": 1.0, "handle": 0.12 },
   "roles": {
     "Armed":       { "file": "mixamo/clips/122990901-sword-and-shield-idle.glb", "loop": true },

@@ -43,11 +43,16 @@ newBout();
 
 const views = [createFighterView(scene, 0xb08a5a), createFighterView(scene, 0x7a5aa0)];
 const input = createInput(controls);
+// the fight starts once both bodies are in, or after bodyWaitMs on capsules
+let loaded = 0;
+const started = performance.now();
 for (const [i, slot] of [[0, 'player'], [1, 'opponent']]) {
   loadBody(clips, slot)
     .then(async (body) => attachBody(views[i], body, await loadClips(clips, body), clips))
-    .catch((e) => console.warn('body', slot, e));
+    .catch((e) => console.warn('body', slot, e))
+    .finally(() => loaded++);
 }
+const fightReady = () => loaded === 2 || performance.now() - started > clips.bodyWaitMs;
 
 // hit-stop: presentation only. The sim pauses stepping; the scale row is 0 by default
 const stopMs = (events) => {
@@ -86,7 +91,7 @@ let acc = 0, last = performance.now(), frozenUntil = 0;
 function frame(t) {
   const dt = Math.min(0.1, (t - last) / 1000);
   last = t;
-  const frozen = t < frozenUntil;
+  const frozen = t < frozenUntil || !fightReady();
   if (!frozen) {
     acc += dt * 1000;
     while (acc >= STEP) {
