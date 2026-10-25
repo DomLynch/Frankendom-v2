@@ -1,0 +1,622 @@
+{
+ "about": "V1's combat audio, reused as is (RPG-game trunk 82a994d15). Sprite: assets/audio/sprite.{ogg,m4a} (src/assets/audio, licences in assets/audio/SOURCES.json: original procedural Foley + CC0 freesound). sprite = cue -> variants -> [start, duration] s (src/audio/manifest.ts:4; V1's 'block'/'block_perfect' renamed guard_clang/guard_perfect for V2's armour lint). events = sim event -> cues, gain/room/delay s/rate from src/fight/sound/cues.ts lines noted. mix from sound/feedback.ts:86-116 and audio-rules-defs.json.",
+ "spriteSeconds": 46.108,
+ "files": {
+  "ogg": "assets/audio/sprite.ogg",
+  "m4a": "assets/audio/sprite.m4a"
+ },
+ "mix": {
+  "voices": 8,
+  "pitchJitter": 0.05,
+  "maxPerTick": 4,
+  "maxOnKill": 8,
+  "balance": 0.15,
+  "compressor": {
+   "threshold": -20,
+   "knee": 10,
+   "ratio": 5,
+   "attack": 0.002,
+   "release": 0.15
+  },
+  "makeup": 2.1,
+  "room": {
+   "seconds": 1.6,
+   "decay": 3
+  }
+ },
+ "events": {
+  "swing_light": [
+   {
+    "cue": "whoosh_light",
+    "gain": 0.12,
+    "room": 0.12,
+    "delay": 0,
+    "rate": 1
+   }
+  ],
+  "swing_heavy": [
+   {
+    "cue": "whoosh_heavy",
+    "gain": 0.18,
+    "room": 0.18,
+    "delay": 0,
+    "rate": 1
+   }
+  ],
+  "swing_kick": [
+   {
+    "cue": "whoosh_light",
+    "gain": 0.09,
+    "room": 0.12,
+    "delay": 0,
+    "rate": 1
+   }
+  ],
+  "whiff": [
+   {
+    "cue": "whoosh_light",
+    "gain": 0.1,
+    "room": 0.1,
+    "delay": 0,
+    "rate": 0.8
+   }
+  ],
+  "hit_light": [
+   {
+    "cue": "hit_flesh",
+    "gain": 0.3,
+    "room": 0.3,
+    "delay": 0,
+    "rate": 1
+   }
+  ],
+  "hit_heavy": [
+   {
+    "cue": "hit_heavy",
+    "gain": 0.3,
+    "room": 0.3,
+    "delay": 0,
+    "rate": 1
+   }
+  ],
+  "hit_kick": [
+   {
+    "cue": "hit_kick",
+    "gain": 0.3,
+    "room": 0.2,
+    "delay": 0,
+    "rate": 1
+   }
+  ],
+  "hit_through_guard": [
+   {
+    "cue": "guard_clang",
+    "gain": 0.3,
+    "room": 0.2,
+    "delay": 0,
+    "rate": 0.8
+   }
+  ],
+  "guard": [
+   {
+    "cue": "guard_clang",
+    "gain": 1,
+    "room": 0.35,
+    "delay": 0,
+    "rate": 1
+   }
+  ],
+  "guard_perfect": [
+   {
+    "cue": "guard_perfect",
+    "gain": 0.55,
+    "room": 0.35,
+    "delay": 0,
+    "rate": 1
+   }
+  ],
+  "parry": [
+   {
+    "cue": "parry",
+    "gain": 1,
+    "room": 0.45,
+    "delay": 0,
+    "rate": 1
+   }
+  ],
+  "guard_break": [
+   {
+    "cue": "guard_break",
+    "gain": 1,
+    "room": 0.35,
+    "delay": 0,
+    "rate": 1
+   },
+   {
+    "cue": "hit_flesh",
+    "gain": 0.55,
+    "room": 0.2,
+    "delay": 0,
+    "rate": 1
+   }
+  ],
+  "posture_break": [
+   {
+    "cue": "bone_crack",
+    "gain": 0.55,
+    "room": 0.05,
+    "delay": 0,
+    "rate": 1
+   }
+  ],
+  "kill": [
+   {
+    "cue": "death_voice",
+    "gain": 0.45,
+    "room": 0.1,
+    "delay": 0.03,
+    "rate": 1
+   },
+   {
+    "cue": "kill",
+    "gain": 0.65,
+    "room": 0.25,
+    "delay": 0.65,
+    "rate": 1
+   },
+   {
+    "cue": "flesh_cut",
+    "gain": 0.45,
+    "room": 0.05,
+    "delay": 0,
+    "rate": 1
+   },
+   {
+    "cue": "crowd_cheer",
+    "gain": 0.23,
+    "room": 0.16,
+    "delay": 0.35,
+    "rate": 1
+   }
+  ],
+  "roll": [
+   {
+    "cue": "roll",
+    "gain": 0.12,
+    "room": 0.12,
+    "delay": 0,
+    "rate": 1
+   }
+  ],
+  "backstep": [
+   {
+    "cue": "backstep",
+    "gain": 0.09,
+    "room": 0.08,
+    "delay": 0,
+    "rate": 1
+   }
+  ]
+ },
+ "synth": {
+  "about": "armfeel-sound.ts:11-18, feedback.ts:135-144: WebAudio layers on top of the sample, x outputGain 0.65, 2 ms attack, exponential decay",
+  "outputGain": 0.65,
+  "hit": [
+   {
+    "type": "triangle",
+    "from": 280,
+    "to": 130,
+    "dur": 0.065,
+    "vol": 0.16
+   },
+   {
+    "type": "noise",
+    "dur": 0.03,
+    "vol": 0.1,
+    "highpass": 1700
+   }
+  ],
+  "kill": [
+   {
+    "type": "triangle",
+    "from": 160,
+    "to": 55,
+    "dur": 0.14,
+    "vol": 0.16
+   },
+   {
+    "type": "noise",
+    "dur": 0.085,
+    "vol": 0.1,
+    "highpass": 1700
+   },
+   {
+    "type": "sine",
+    "from": 1000,
+    "to": 1500,
+    "dur": 0.09,
+    "vol": 0.065
+   }
+  ]
+ },
+ "sprite": {
+  "whoosh_light": [
+   [
+    0.02,
+    0.192
+   ],
+   [
+    0.272,
+    0.185
+   ],
+   [
+    0.517,
+    0.182
+   ],
+   [
+    0.759,
+    0.181
+   ]
+  ],
+  "whoosh_heavy": [
+   [
+    1,
+    0.291
+   ],
+   [
+    1.352,
+    0.294
+   ],
+   [
+    1.706,
+    0.253
+   ],
+   [
+    2.019,
+    0.272
+   ]
+  ],
+  "draw": [
+   [
+    2.351,
+    0.3
+   ],
+   [
+    2.711,
+    0.3
+   ]
+  ],
+  "hit_flesh": [
+   [
+    3.071,
+    0.62
+   ],
+   [
+    3.751,
+    0.45
+   ],
+   [
+    4.261,
+    0.75
+   ],
+   [
+    5.071,
+    0.6
+   ],
+   [
+    5.731,
+    0.7
+   ]
+  ],
+  "hit_heavy": [
+   [
+    6.491,
+    0.75
+   ],
+   [
+    7.301,
+    0.55
+   ],
+   [
+    7.911,
+    0.852
+   ],
+   [
+    8.824,
+    0.682
+   ],
+   [
+    9.565,
+    0.795
+   ]
+  ],
+  "hit_kick": [
+   [
+    10.421,
+    0.28
+   ],
+   [
+    10.761,
+    0.28
+   ],
+   [
+    11.101,
+    0.28
+   ],
+   [
+    11.441,
+    0.28
+   ]
+  ],
+  "guard_clang": [
+   [
+    11.781,
+    0.5
+   ],
+   [
+    12.341,
+    0.5
+   ],
+   [
+    12.901,
+    0.48
+   ],
+   [
+    13.441,
+    0.48
+   ]
+  ],
+  "guard_perfect": [
+   [
+    13.981,
+    0.6
+   ],
+   [
+    14.641,
+    0.6
+   ],
+   [
+    15.301,
+    0.6
+   ],
+   [
+    15.961,
+    0.6
+   ]
+  ],
+  "parry": [
+   [
+    16.621,
+    0.72
+   ],
+   [
+    17.401,
+    0.72
+   ],
+   [
+    18.181,
+    0.72
+   ],
+   [
+    18.961,
+    0.66
+   ],
+   [
+    19.681,
+    0.66
+   ],
+   [
+    20.401,
+    0.66
+   ]
+  ],
+  "guard_break": [
+   [
+    21.121,
+    0.46
+   ],
+   [
+    21.641,
+    0.46
+   ],
+   [
+    22.161,
+    0.46
+   ],
+   [
+    22.681,
+    0.46
+   ]
+  ],
+  "whip": [
+   [
+    23.201,
+    0.28
+   ],
+   [
+    23.541,
+    0.28
+   ]
+  ],
+  "whip_raise": [
+   [
+    23.881,
+    0.4
+   ],
+   [
+    24.341,
+    0.4
+   ]
+  ],
+  "charge": [
+   [
+    24.801,
+    0.5
+   ],
+   [
+    25.361,
+    0.5
+   ]
+  ],
+  "kill": [
+   [
+    25.921,
+    0.62
+   ],
+   [
+    26.601,
+    0.82
+   ],
+   [
+    27.481,
+    0.7
+   ]
+  ],
+  "roll": [
+   [
+    28.241,
+    0.32
+   ],
+   [
+    28.621,
+    0.32
+   ],
+   [
+    29.001,
+    0.32
+   ],
+   [
+    29.381,
+    0.32
+   ]
+  ],
+  "backstep": [
+   [
+    29.761,
+    0.15
+   ],
+   [
+    29.971,
+    0.15
+   ],
+   [
+    30.181,
+    0.15
+   ],
+   [
+    30.391,
+    0.15
+   ]
+  ],
+  "death_voice": [
+   [
+    30.601,
+    0.44
+   ],
+   [
+    31.101,
+    0.62
+   ],
+   [
+    31.781,
+    0.44
+   ],
+   [
+    32.281,
+    0.62
+   ]
+  ],
+  "flesh_cut": [
+   [
+    32.961,
+    0.18
+   ],
+   [
+    33.201,
+    0.18
+   ],
+   [
+    33.441,
+    0.18
+   ],
+   [
+    33.681,
+    0.18
+   ]
+  ],
+  "flesh_stab": [
+   [
+    33.921,
+    0.16
+   ],
+   [
+    34.141,
+    0.16
+   ]
+  ],
+  "flesh_tear": [
+   [
+    34.361,
+    0.34
+   ],
+   [
+    34.761,
+    0.34
+   ]
+  ],
+  "bone_crack": [
+   [
+    35.161,
+    0.5
+   ],
+   [
+    35.721,
+    0.38
+   ]
+  ],
+  "crowd_gasp": [
+   [
+    36.161,
+    0.42
+   ],
+   [
+    36.641,
+    0.42
+   ]
+  ],
+  "crowd_cheer": [
+   [
+    37.121,
+    2.5
+   ],
+   [
+    39.681,
+    2.5
+   ],
+   [
+    42.241,
+    2.5
+   ]
+  ],
+  "charge_foe": [
+   [
+    44.801,
+    0.397
+   ],
+   [
+    45.257,
+    0.391
+   ]
+  ],
+  "effort_voice": [
+   [
+    45.708,
+    0.15
+   ],
+   [
+    45.918,
+    0.15
+   ]
+  ]
+ }
+}

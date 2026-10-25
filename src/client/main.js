@@ -6,13 +6,14 @@ import { lockPageZoom, viewW, viewH } from './zoom-guard.js';
 import { createInput } from './input.js';
 import { createFighterView, attachBody, drawFighter } from './render.js';
 import { createFx } from './fx.js';
+import { createSound } from './sound.js';
 import { loadBody, loadClips } from './assets.js';
 import { createSim } from '../sim/sim.js';
 import { createBrain, think } from '../sim/brain.js';
 
 const get = (f) => fetch(`./data/${f}.json`, { cache: 'no-cache' }).then((r) => r.json());
-const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specials, feelDef] = await Promise.all(
-  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials', 'feel'].map(get),
+const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specials, feelDef, soundDef] = await Promise.all(
+  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials', 'feel', 'sound'].map(get),
 );
 const params = new URLSearchParams(location.search);
 const hitScale = params.has('hitstop') ? Number(params.get('hitstop')) : hitStop.scale;
@@ -48,6 +49,7 @@ newBout();
 
 const views = [createFighterView(scene, 0xb08a5a), createFighterView(scene, 0x7a5aa0)];
 const fx = createFx(scene, feelDef);
+const sound = createSound(soundDef);
 const input = createInput(controls);
 // the fight starts once both bodies are in, or after bodyWaitMs on capsules
 let loaded = 0;
@@ -110,6 +112,7 @@ function frame(t) {
       const me = sim.state.fighters[0];
       const events = sim.step([input.sample(cam.yaw, me), aiOff ? {} : think(brain, sim, 1)]);
       fx.onEvents(events, sim);
+      sound.onTick(events, sim);
       const ms = stopMs(events);
       if (ms > 0) { frozenUntil = t + ms; acc = 0; break; }
       if (sim.state.over && ++deadFor >= rules.death) newBout();
