@@ -38,11 +38,10 @@ addEventListener('resize', () => {
 
 const data = { rules, moves, specials };
 let seed = Number(params.get('seed')) || 1;
-let sim, brain, deadFor;
+let sim, brain;
 function newBout() {
   sim = createSim(data, seed);
   brain = createBrain(brainRow, seed * 7919 + 1);
-  deadFor = 0;
   document.getElementById('msg').textContent = '';
   seed++;
 }
@@ -90,9 +89,21 @@ function updateCamera(dt) {
   const h = p.heading - camDef.orbit;
   const fx = Math.sin(h), fz = Math.cos(h), sx = fz, sz = -fx;
   const eye = new THREE.Vector3(p.x - fx * back + sx * c.side, up, p.z - fz * back + sz * c.side);
-  if (cam.init) cam.pos.lerp(eye, 1 - Math.exp(-camDef.follow * dt)); else cam.pos.copy(eye);
   const ax = p.x + fx * c.ahead, az = p.z + fz * c.ahead;
-  cam.look.set(ax + ((p.x + q.x) / 2 - ax) * c.mid, c.lookY, az + ((p.z + q.z) / 2 - az) * c.mid);
+  const lookAt = new THREE.Vector3(ax + ((p.x + q.x) / 2 - ax) * c.mid, c.lookY, az + ((p.z + q.z) / 2 - az) * c.mid);
+  // the kill: V1's plain dolly over the fallen (push in, slide, turn), looking at the body; nothing is written over it until it settles
+  if (cam.kill) {
+    const K = camDef.kill, f = sim.state.fighters[cam.kill.victim];
+    cam.kill.t += dt;
+    const e = Math.min(1, cam.kill.t / K.over), s = e * e * (3 - 2 * e);
+    const v = new THREE.Vector3(f.x, 0, f.z), off = eye.clone().sub(v);
+    off.applyAxisAngle(new THREE.Vector3(0, 1, 0), K.turn * s);
+    const flat = new THREE.Vector3(off.x, 0, off.z), right = new THREE.Vector3(-flat.z, 0, flat.x).normalize();
+    eye.copy(v).add(off.multiplyScalar(1 - K.push * s)).addScaledVector(right, K.slide * s);
+    lookAt.lerp(new THREE.Vector3(f.x, K.lookY, f.z), s);
+  }
+  if (cam.init) cam.pos.lerp(eye, 1 - Math.exp(-camDef.follow * dt)); else cam.pos.copy(eye);
+  cam.look.copy(lookAt);
   cam.init = true;
   camera.position.copy(cam.pos);
   camera.lookAt(cam.look);
@@ -119,14 +130,20 @@ function frame(t) {
       fx.onEvents(events, sim);
       blood.onEvents(events, sim);
       sound.onTick(events, sim);
+      const killed = events.find((e) => e.t === 'Killed');
+      if (killed) cam.kill = { victim: killed.f, t: 0 };
       const ms = stopMs(events);
       if (ms > 0) { frozenUntil = t + ms; acc = 0; break; }
-      if (sim.state.over && ++deadFor >= rules.death) { newBout(); blood.clear(); }
+      if (sim.state.over && cam.kill && cam.kill.t >= camDef.kill.nextBout) { newBout(); blood.clear(); cam.kill = null; }
     }
   }
-  if (sim.state.over) {
-    const won = sim.state.fighters[1].hp <= 0;
-    document.getElementById('msg').textContent = won ? 'Victory' : 'Defeat';
+  // the result card, once the kill camera has settled (V1: nothing over the body before that)
+  const msg = document.getElementById('msg');
+  if (sim.state.over && cam.kill && cam.kill.t >= camDef.kill.settle) {
+    const [me, foe] = sim.state.fighters, won = foe.hp <= 0 && me.hp > 0;
+    const next = Math.max(0, Math.ceil(camDef.kill.nextBout - cam.kill.t));
+    msg.innerHTML = `<div>${won ? 'Victory' : me.hp <= 0 && foe.hp <= 0 ? 'Draw' : 'Defeat'}</div>`
+      + `<small>dealt ${rules.health - foe.hp} · took ${rules.health - me.hp}<br>next bout in ${next}</small>`;
   }
   const feel = fx.update(dt, sim);
   blood.update(dt);
