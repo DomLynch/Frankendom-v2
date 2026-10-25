@@ -1,0 +1,14 @@
+{
+  "source": "opentrident-steam/site/index.html 129-181 @ b3c8bf0",
+  "sky": "#9db7d6",
+  "fog": { "near": 40, "far": 120 },
+  "ground": { "size": 400, "color": "#6b655f" },
+  "grid": { "size": 80, "divisions": 80, "center": "#857d75", "lines": "#7a736c" },
+  "ruler": { "height": 1.8, "tick": 0.1, "color": "#ffd166", "x": -2.9 },
+  "light": {
+    "exposure": 1.25,
+    "environment": 0.85,
+    "hemi": { "sky": "#dfeaff", "ground": "#5a5650", "intensity": 0.5 },
+    "sun": { "color": "#fff1dc", "intensity": 2.6, "position": [3, 6, 4], "shadowHalf": 6 }
+  }
+}

@@ -16,3 +16,47 @@ jobs:
         with:
           node-version: 22
       - run: npm test
+
+  # Every green main goes live at https://v2.frankendom.com (site root, no prefix).
+  # Target and key come from Frankendom Deploy as repo secrets; until they exist the job skips.
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+      DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Skip until the deploy target exists
+        id: gate
+        run: |
+          if [ -z "$DEPLOY_HOST" ] || [ -z "$DEPLOY_PATH" ] || [ -z "$DEPLOY_KEY" ]; then
+            echo "Deploy secrets not set yet; skipping."; echo "go=0" >> "$GITHUB_OUTPUT"
+          else echo "go=1" >> "$GITHUB_OUTPUT"; fi
+      - name: Assemble site
+        if: steps.gate.outputs.go == '1'
+        run: |
+          mkdir -p _site
+          cp index.html _site/index.html
+          cp -r src data _site/
+          echo "${GITHUB_SHA}" > _site/build.txt
+      - name: Publish
+        if: steps.gate.outputs.go == '1'
+        run: |
+          install -m 600 /dev/null key && printf '%s\n' "$DEPLOY_KEY" > key
+          rsync -az --delete -e "ssh -i key -o StrictHostKeyChecking=accept-new" \
+            _site/ "${DEPLOY_USER:-deploy}@${DEPLOY_HOST}:${DEPLOY_PATH}/"
+          rm -f key
+      - name: Check served build
+        if: steps.gate.outputs.go == '1'
+        run: |
+          sleep 2
+          served=$(curl -fsS https://v2.frankendom.com/build.txt)
+          test "$served" = "$GITHUB_SHA" && echo "live: $served"

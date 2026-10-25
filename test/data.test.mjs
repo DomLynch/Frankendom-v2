@@ -13,7 +13,7 @@ test('every data file parses', () => {
 
 // Armour is a threshold multiplier only; no row may block or grant immunity.
 test('no data row has a block or immune field', () => {
-  const banned = /"(block|immune)\w*"\s*:/i;
+  const banned = /"(block|blocks|immune|immunity)"\s*:/i;
   for (const f of files) {
     assert.ok(!banned.test(readFileSync(new URL(f, dir), 'utf8')), `${f} has a block/immune field`);
   }

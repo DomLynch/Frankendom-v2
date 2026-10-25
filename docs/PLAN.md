@@ -36,7 +36,7 @@ src/sim/                pure, shared phone + Node
   combat.js             reach test, guard side, parry, riposte, hit-stun, hit-stop, part damage
   validate.js           data validator (closed key sets, block-field lint)
 src/client/
-  index.html, main.js   boots the stage and the fight camera at 375 wide
+  main.js               boots the stage and the fight camera at 375 wide (the page is index.html at the repo root)
   stage.js              the OpenTrident viewer scene, reused: grid floor, plain blue sky, height ruler (values in data/stage.json)
   input.js              thumb controls -> intents
   render.js             events -> body pose, clip playback, hit-stop freeze

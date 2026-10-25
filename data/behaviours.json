@@ -1,0 +1,14 @@
+{
+  "about": "Opponent brains, one row each. 'easy' is RPG-game trunk src/fight/moves-tables-defs.json:4-13 with the ai.ts:74-451 loop (decision 90, modes from ai-dial-defs.json). Ticks at 60 Hz, distances in metres.",
+  "brains": [
+    {
+      "id": "easy",
+      "reaction": 24, "accuracy": 0.5, "parry": 0.1, "dodge": 0.1, "aggression": 0.45, "lapse": 0.45, "read": 0.5,
+      "pressure": 0, "thrustShare": 0.2, "kick": 0.1, "staminaFloor": 60, "postureFloor": 70,
+      "firstWait": 90, "waitBase": 45, "waitRand": 60, "waitAggro": 1.6, "bait": 0.6,
+      "modeEvery": 36, "modeRand": 45, "far": 1.4, "near": 1, "guardChance": 0.33,
+      "close": 1.15, "approach": 0.6, "circle": 0.25, "retreat": 0.4, "reachSlack": 0.4, "reachIn": 0.1,
+      "jitter": 8, "parryLead": 8, "rollMin": 4, "rollMax": 18
+    }
+  ]
+}
