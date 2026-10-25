@@ -68,7 +68,7 @@ export function createBlood(scene, def) {
     onEvents(events, sim) {
       const F0 = sim.state.fighters;
       for (const e of events) {
-        if (e.t !== 'Hit' && e.t !== 'GuardBroken') continue;
+        if (e.t !== 'Hit' && e.t !== 'GuardBroken' && e.t !== 'SpecialLanded') continue;
         if (e.move === 'kick') continue;   // a kick is bloodless (V1 fx.ts bloodless colour)
         const a = F0[e.a], d = F0[e.d];
         const dx = d.x - a.x, dz = d.z - a.z, len = Math.hypot(dx, dz) || 1;

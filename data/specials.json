@@ -1,8 +1,34 @@
 {
-  "about": "The two SPECIAL buttons as V1's melee specials: each fires its skill's own move-defs row on its own cooldown (RPG-game trunk duel.ts:253-254,288-290,383-391). Slot 1 = the hero's day-one skill (src/fight/skill-defs.json:20, dayOne: pommel); slot 2 = the pre-filled second special (src/fight/sandbox-rules-defs.json specialPick, slot2Default: cleave). Cooldown = rules-defs.json skillCooldown 900 ticks, spent at commitment.",
-  "cooldown": 900,
+  "about": "V1's live Special Moves (RPG-game trunk 82a994d15), the melee kind V1's beta gives the player. A press within `reach` commits a cast (nothing spent out of reach); the cast winds up `windup` ticks (sandbox specialMeleeWindup), during which no other action is legal; on release it lands `share` of the target's max health, unblockable and undodgeable, unless the target has left reach+slack (fizzles); the victim staggers, is shoved and shaken by the skill's move row scaled by `react` percent (sandbox specialReact*). The caster can't attack for `recovery` ticks. Damage taken during the windup adds up: at interruptAt of max health the cast is cut (lockout = interruptCooldown x (1 + early x ticks left / windup / 1000)); a lesser hit pushes the release back `pushback` ticks, at most pushbackMax times. Timers are RV80's live rows (rows80-defs.json): ready `first` ticks into a fight, then `cooldown` between casts, each slot its own (spell-slot-defs sharedCooldown 0). Slots: career-rules.json:87 betaCut slot defaults; the full pick list is sandbox-rules-defs.json:341-366. Sources: duel.ts:363-380 (cast), 641-692 (release), 740-760 (interrupt); rules-defs.json:28-37.",
+  "windup": 32,
+  "reach": 2.2,
+  "slack": 0.4,
+  "share": 0.2,
+  "first": 120,
+  "cooldown": 360,
+  "recovery": 45,
+  "interruptAt": 0.1,
+  "interruptCooldown": 480,
+  "interruptEarly": 1000,
+  "pushback": 30,
+  "pushbackMax": 2,
+  "react": { "stagger": 160, "knock": 450, "posture": 150 },
+  "staggerFloor": { "lunge": 36 },
   "slots": [
-    { "press": "special1", "skill": "pommel", "move": "skill_pommel", "name": "Pommel Strike" },
-    { "press": "special2", "skill": "cleave", "move": "skill_cleave", "name": "Butcher's Cleave" }
-  ]
+    { "press": "special1", "skill": "cleave", "move": "skill_cleave", "name": "Skull Crack", "clip": "SkullCrack" },
+    { "press": "special2", "skill": "reaping", "move": "skill_reaping", "name": "Whirlwind", "clip": "Whirlwind" }
+  ],
+  "pick": [
+    { "skill": "cleave", "move": "skill_cleave", "name": "Skull Crack", "clip": "SkullCrack" },
+    { "skill": "reaping", "move": "skill_reaping", "name": "Whirlwind", "clip": "Whirlwind" },
+    { "skill": "stomp", "move": "skill_stomp", "name": "Ground Slam", "clip": "GroundSlam" },
+    { "skill": "lunge", "move": "skill_lunge", "name": "Lunge", "clip": "Lunge" }
+  ],
+  "sounds": {
+    "about": "sandbox-rules-defs.json specialSound (gain and room in permille there, delays in ms): `start` rows play on the cast, the rest on the landed blow",
+    "cleave":  { "start": [{ "cue": "whoosh_heavy", "gain": 0.65, "room": 0.2, "delay": 0.28 }], "land": [{ "cue": "bone_crack", "gain": 0.85, "room": 0.15 }, { "cue": "hit_heavy", "gain": 0.6, "room": 0.3 }] },
+    "reaping": { "start": [{ "cue": "whoosh_heavy", "gain": 0.6, "room": 0.2, "delay": 0.12 }, { "cue": "whoosh_heavy", "gain": 0.75, "room": 0.2, "delay": 0.3 }], "land": [{ "cue": "hit_heavy", "gain": 0.75, "room": 0.3 }, { "cue": "flesh_cut", "gain": 0.55, "room": 0.2 }] },
+    "stomp":   { "start": [{ "cue": "whoosh_heavy", "gain": 0.6, "room": 0.2, "delay": 0.26 }], "land": [{ "cue": "hit_heavy", "gain": 0.9, "room": 0.35 }, { "cue": "guard_break", "gain": 0.45, "room": 0.3 }] },
+    "lunge":   { "start": [{ "cue": "whoosh_light", "gain": 0.6, "room": 0.15, "delay": 0.15 }], "land": [{ "cue": "flesh_stab", "gain": 0.75, "room": 0.15 }, { "cue": "hit_heavy", "gain": 0.3, "room": 0.25 }] }
+  }
 }

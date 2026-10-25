@@ -75,7 +75,7 @@ export function createFx(scene, def) {
         const a = F[e.a], d = F[e.d];
         const c = a && d ? contactOf(a, d) : null;
         const heavy = e.heavy || HEAVY.has(e.move);
-        if (e.t === 'Hit') {
+        if (e.t === 'Hit' || e.t === 'SpecialLanded') {   // a landed special plays the heavy impact layer (V1: no dedicated special VFX)
           const kill = d.hp <= 0;
           shove(e.move === 'kick' ? K.kick : heavy ? K.heavyHit : K.hit, c.dir);
           spray(c.p, c.dir, def.dots.count, e.move === 'kick' ? def.dots.color.bloodless : def.dots.color.flesh, def.dots.size.flesh,

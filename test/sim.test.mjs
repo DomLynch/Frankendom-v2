@@ -102,38 +102,57 @@ test('a held guard on the right side blocks: stamina drain, no damage from a lig
   assert.ok(b.st < 100);
 });
 
-test('specials: pommel 18/4/18, cleave 32/5/31, each on its own 900-tick cooldown', () => {
+// V1's live specials (data/specials.json): ready 120 ticks in, 32-tick windup, 20 % of max health, unblockable
+test('specials are ready 120 ticks into a fight, then release 31 ticks after the press for 20 % of max health', () => {
+  const sim = duel(1.2);
+  const [a, b] = sim.state.fighters;
+  assert.ok(sim.step([{ press: 'special1' }, idle]).some((e) => e.t === 'PressRefused'), 'not ready at the start');
+  run(sim, 119);
+  const ev = sim.step([{ press: 'special1' }, { guard: 'left' }]);
+  assert.ok(ev.some((e) => e.t === 'SpecialStarted' && e.skill === 'cleave'));
+  const seen = [];
+  for (let k = 1; k <= 31; k++) seen.push(...sim.step([idle, { guard: 'left' }]).map((e) => [k, e]));
+  const land = seen.find(([, e]) => e.t === 'SpecialLanded');
+  assert.ok(land, JSON.stringify(seen.map(([k, e]) => [k, e.t])));
+  assert.equal(land[0], 31);
+  assert.equal(land[1].dmg, 30);
+  assert.equal(b.hp, 120, 'unblockable: the held guard took the full special');
+  assert.equal(b.phase, 'hurt');
+  assert.equal(b.stun, 45, 'skill_cleave stagger 28 x 160 %');
+  assert.equal(a.specialCd[0], 360 - 1);
+  assert.equal(a.specialCd[1], 0, 'each slot has its own cooldown');
+});
+
+test('a special out of reach is refused and spends nothing', () => {
   const sim = duel(3);
   const a = sim.state.fighters[0];
-  sim.step([{ press: 'special1' }, idle]);
-  assert.equal(a.move, 'skill_pommel');
-  assert.equal(a.specialCd[0], 900 - 1);
-  run(sim, 39);
-  assert.equal(a.phase, 'attack');
-  run(sim, 1);
-  assert.equal(a.phase, 'ready');
-  a.st = 100;
-  const ev = [...sim.step([{ press: 'special1' }, idle])];
-  assert.equal(a.phase, 'ready', 'slot 1 still cooling');
-  assert.ok(ev.some((e) => e.t === 'PressRefused'));
-  sim.step([{ press: 'special2' }, idle]);
-  assert.equal(a.move, 'skill_cleave');
-  run(sim, 67);
-  assert.equal(a.phase, 'attack');
-  run(sim, 1);
-  assert.equal(a.phase, 'ready');
-  run(sim, 900);
+  a.specialCd = [0, 0];
+  const ev = sim.step([{ press: 'special2' }, idle]);
+  assert.ok(ev.some((e) => e.t === 'SpecialRefused'));
+  assert.equal(a.special, 0);
   assert.deepEqual(a.specialCd, [0, 0]);
 });
 
-test('a special lands with its own row: pommel 20 damage, stagger 50', () => {
+test('a heavy landing during the windup interrupts the special; recovery blocks attacks', () => {
   const sim = duel(1.2);
+  const [a, b] = sim.state.fighters;
+  a.specialCd = [0, 0];
+  b.specialCd = [0, 0];
+  sim.step([idle, { press: 'heavy' }]);
+  run(sim, 9);
   sim.step([{ press: 'special1' }, idle]);
-  let hit = null;
-  for (let i = 0; i < 25 && !hit; i++) hit = sim.step([idle, idle]).find((e) => e.t === 'Hit');
-  assert.ok(hit);
-  assert.equal(hit.dmg, 20);
-  assert.equal(sim.state.fighters[1].stun, 50);
+  const ev = run(sim, 25);
+  assert.ok(ev.some((e) => e.t === 'SpecialInterrupted'), JSON.stringify(ev.map((e) => e.t)));
+  assert.equal(a.special, 0);
+  assert.ok(a.specialCd[0] > 480, 'an early cut locks out longer than the base 480');
+  // a released special holds attacks back for 45 ticks
+  const s2 = duel(1.2);
+  const [c] = s2.state.fighters;
+  c.specialCd = [0, 0];
+  s2.step([{ press: 'special2' }, idle]);
+  run(s2, 31);
+  assert.equal(c.specialRecover, 45 - 1);
+  assert.ok(s2.step([{ press: 'light' }, idle]).some((e) => e.t === 'PressRefused'));
 });
 
 test('heavy is 32/5/31 and a chained light is 16/5/20', () => {

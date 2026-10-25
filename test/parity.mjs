@@ -156,7 +156,7 @@ export function measureBlockCost() {
 // the rows the parity test asserts and the table prints: [what, V2 measured, V1 trunk]
 export function parityRows() {
   const R = V1.rules, rows = [];
-  for (const [label, press, id] of [['light', 'light', 'light_right'], ['heavy', 'heavy', 'heavy_overhead'], ['stab', 'thrust', 'thrust'], ['kick', 'kick', 'kick'], ['SPECIAL 1', 'special1', 'skill_pommel'], ['SPECIAL 2', 'special2', 'skill_cleave']]) {
+  for (const [label, press, id] of [['light', 'light', 'light_right'], ['heavy', 'heavy', 'heavy_overhead'], ['stab', 'thrust', 'thrust'], ['kick', 'kick', 'kick']]) {
     const m = measureMove(press), v = v1Move(id);
     // measured with nothing in reach, so a thrust whiffs and adds V1's whiff hang (rules-defs stopHit.whiff)
     const rec = v.recovery + (id === 'thrust' ? R['stopHit.whiff'] : 0);

@@ -73,6 +73,10 @@ function handGrip(body) {
 
 function roleFor(f, sim, def) {
   if (f.phase === 'dead') return { role: def.states.dead, scrub: null };
+  // a special: its clip runs start..strike over the windup (longer if a hit pushed it back), then strike..end over the recovery
+  const S = sim.specials, slot = S && f.castSlot >= 0 ? S.slots[f.castSlot] : null;
+  if (slot && f.special > 0) return { role: slot.clip, special: 'windup', p: 1 - Math.min(f.special, S.windup) / S.windup };
+  if (slot && f.specialRecover > 0 && f.phase === 'ready') return { role: slot.clip, special: 'recover', p: 1 - f.specialRecover / S.recovery };
   if (f.phase === 'attack') {
     const m = sim.moves[f.move];
     const path = f.chained && m.chainPath ? m.chainPath : m.path || m.id;
@@ -116,7 +120,12 @@ export function drawFighter(view, f, sim, def, dt, frozen) {
   }
   if (entry) {
     const { a, row, dur } = entry;
-    if (pose.attack) {
+    if (pose.special) {
+      const hit = row.hit ?? 0.46, s0 = row.start ?? 0;
+      const frac = pose.special === 'windup' ? s0 + pose.p * (hit - s0) : hit + pose.p * (1 - hit);
+      a.paused = true;
+      a.time = Math.min(dur, frac * dur);
+    } else if (pose.attack) {
       const t = pose.attack, hit = row.hit ?? 0.46, s0 = row.start ?? 0;
       const frac = pose.age < t.windup ? s0 + (pose.age / t.windup) * (hit - s0) : hit + ((pose.age - t.windup) / (t.active + t.recovery)) * (1 - hit);
       a.paused = true;

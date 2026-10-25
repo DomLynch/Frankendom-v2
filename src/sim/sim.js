@@ -38,7 +38,10 @@ function makeFighter(R, x, z, heading) {
     hp: R.health, st: R.stamina.max, posture: 0, postureHold: 0, rest: 0, exhausted: false,
     phase: 'ready', age: 0, fresh: false, stun: 0, hurtKind: null, chainFrom: null,
     move: null, chained: false, landed: false, parked: 0, charged: false, whiffHang: 0, hung: false,
-    guardSide: null, parrying: false, parryCd: 0, exposed: 0, specialCd: [0, 0],
+    guardSide: null, parrying: false, parryCd: 0, exposed: 0,
+    // a special: per-slot cooldowns (ready `first` ticks into the fight), the cast's windup left, its slot, damage taken while
+    // casting, pushbacks used, and the recovery after release in which no attack is legal
+    specialCd: (R.specials.slots || []).map(() => R.specials.first || 0), special: 0, castSlot: -1, castHurt: 0, castPush: 0, specialRecover: 0,
     punish: 0, punishKind: null, counterWindow: 0, chainWindow: 0, lastLight: 'left', evadeEnd: 99,
     buffer: null, rollX: 0, rollZ: 0, speed: 0, moved: 0, sprinted: false,
   };
@@ -97,6 +100,7 @@ function step(state, intents, moves, R) {
   if (state.over) return events;
   state.tick++;
   const [a, b] = state.fighters;
+  const hpBefore = [a.hp, b.hp];
 
   for (const [f, foe, i] of [[a, b, 0], [b, a, 1]]) decide(f, foe, intents[i] || {}, moves, R, events, i);
   for (const [f, foe, i] of [[a, b, 0], [b, a, 1]]) advance(f, foe, intents[i] || {}, moves, R);
@@ -105,6 +109,7 @@ function step(state, intents, moves, R) {
   const snap = [structuredCloneLite(a), structuredCloneLite(b)];
   contact(a, b, snap[0], snap[1], 0, moves, R, events);
   contact(b, a, snap[1], snap[0], 1, moves, R, events);
+  specials(state.fighters, hpBefore, moves, R, events);
 
   for (const [f, foe, i] of [[a, b, 0], [b, a, 1]]) upkeep(f, foe, i, R, events);
   if (a.hp <= 0 || b.hp <= 0) state.over = true;
@@ -117,9 +122,7 @@ function structuredCloneLite(f) {
 
 // ---------- 1. decide ----------
 
-function resolvePress(f, press, intent, R) {
-  const slot = R.specials.slots.find((s) => s.press === press);
-  if (slot) return slot.move;   // a special is never a riposte or a counter, whatever window is open
+function resolvePress(f, press, intent) {
   if (press === 'light') {
     if (f.punish > 0) return 'slash_riposte';
     const side = intent.side || (f.lastLight === 'right' ? 'left' : 'right');
@@ -136,12 +139,11 @@ function resolvePress(f, press, intent, R) {
 }
 
 function legal(f, press, moveId, moves, R) {
-  if (f.hp <= 0 || f.exhausted) return false;
+  if (f.hp <= 0 || f.exhausted || f.special > 0) return false;   // nothing is legal during a special's windup
   const standing = f.phase === 'ready' || f.phase === 'guard';
   const backTail = f.phase === 'backstep' && f.age >= R.backstep.cancelFrom;
+  if (f.specialRecover > 0 && moveId) return false;   // the special's recovery: no attack until it ends (guard, roll, steps stay legal)
   if (moveId === 'kick') return standing && f.st >= moves.kick.stamina;
-  const slot = R.specials.slots.findIndex((s) => s.press === press);
-  if (slot >= 0) return f.specialCd[slot] === 0 && (standing || backTail) && f.st >= moves[moveId].stamina;
   if (moveId) return (standing || backTail) && f.st >= moves[moveId].stamina;
   if (press === 'dodge') return (standing && f.st >= R.roll.cost) || (f.phase === 'backstep' && f.st >= R.roll.cost - R.backstep.cost);
   if (press === 'backstep') return standing && f.st >= R.backstep.cost;
@@ -168,12 +170,13 @@ function decide(f, foe, intent, moves, R, events, i) {
     return;
   }
 
-  if (press) {
-    const moveId = resolvePress(f, press, intent, R);
+  const slot = press ? R.specials.slots.findIndex((s) => s.press === press) : -1;
+  if (slot >= 0) {
+    castSpecial(f, foe, slot, R, events, i);
+  } else if (press) {
+    const moveId = resolvePress(f, press, intent);
     if (legal(f, press, moveId, moves, R)) {
       f.buffer = null;
-      const slot = R.specials.slots.findIndex((s) => s.press === press);
-      if (slot >= 0) f.specialCd[slot] = R.specials.cooldown;   // spent at commitment: a whiff, block or parry spends it too
       if (moveId) startAttack(f, foe, moveId, moves, R, events, i);
       else if (press === 'dodge') startRoll(f, foe, intent, R, f.phase === 'backstep');
       else if (press === 'backstep') { spend(f, R, R.backstep.cost); enter(f, 'backstep'); }
@@ -184,12 +187,80 @@ function decide(f, foe, intent, moves, R, events, i) {
     }
   }
 
-  // held guard without a fresh press
+  // held guard without a fresh press (never during a special's windup)
+  if (f.special > 0) return;
   if (f.phase === 'ready' && intent.guard && f.exposed === 0 && !f.exhausted) raiseGuard(f, intent.guard, R, false);
   if (f.phase === 'guard') {
     if (intent.guard) f.guardSide = intent.guard;
     else if (!(f.parrying && f.age < R.parry.window)) dropGuard(f, R);
   }
+}
+
+// V1 duel.ts:287,363-380: a special press commits a cast from standing (or the backstep tail) when its slot has cooled; out of
+// reach it is refused and nothing is spent. No stamina: a melee special costs only its cooldown, spent on release.
+function castSpecial(f, foe, slot, R, events, i) {
+  const S = R.specials, row = S.slots[slot];
+  const standing = f.phase === 'ready' || f.phase === 'guard';
+  const backTail = f.phase === 'backstep' && f.age >= R.backstep.cancelFrom;
+  if (f.hp <= 0 || f.exhausted || f.special > 0 || f.specialRecover > 0 || f.specialCd[slot] > 0 || !(standing || backTail)) {
+    events.push({ t: 'PressRefused', f: i, press: row.press });
+    return;
+  }
+  if (dist(f, foe) > S.reach) { events.push({ t: 'SpecialRefused', f: i, skill: row.skill, cue: 'far' }); return; }
+  f.special = S.windup;
+  f.castSlot = slot;
+  f.castHurt = 0;
+  f.castPush = 0;
+  f.buffer = null;
+  enter(f, 'ready');
+  f.parrying = false;
+  f.guardSide = null;
+  events.push({ t: 'SpecialStarted', f: i, skill: row.skill, move: row.move });
+}
+
+// V1 duel.ts:641-692, 740-760: releases first (both sides judged before either lands), then every windup still running counts
+// down, is pushed back by a hit, or is cut by enough damage
+function specials(fighters, hpBefore, moves, R, events) {
+  const S = R.specials;
+  const releasing = fighters.map((f) => f.special === 1);
+  fighters.forEach((A, i) => {
+    if (!releasing[i]) return;
+    const D = fighters[1 - i], row = S.slots[A.castSlot];
+    A.special = 0;
+    A.specialCd[A.castSlot] = S.cooldown;
+    A.specialRecover = S.recovery;
+    if (D.hp <= 0 || D.phase === 'dead') return;
+    if (dist(A, D) > S.reach + S.slack) { events.push({ t: 'SpecialFizzled', f: i, skill: row.skill }); return; }
+    const damage = Math.round(S.share * R.health);
+    D.hp = Math.max(0, D.hp - damage);
+    events.push({ t: 'SpecialLanded', a: i, d: 1 - i, skill: row.skill, move: row.move, dmg: damage, heavy: true });
+    if (D.hp > 0) {
+      const m = moves[row.move], away = angleTo(A, D);
+      const steps = Math.round(m.knockback * S.react.knock / 100), k = steps * R.move.walk / R.tickHz;
+      D.x += Math.sin(away) * k;
+      D.z += Math.cos(away) * k;
+      const stun = Math.max(D.phase === 'hurt' ? D.stun : 0, Math.round(m.stagger * S.react.stagger / 100), S.staggerFloor[row.skill] || 0);
+      hurt(D, stun, 'hit');
+      gainPosture(D, m.posture * S.react.posture / 100);
+    }
+  });
+  fighters.forEach((A, i) => {
+    if (!A.special) return;
+    if (A.hp <= 0) { A.special = 0; events.push({ t: 'SpecialFizzled', f: i }); return; }
+    const took = Math.max(0, hpBefore[i] - A.hp);
+    if (took) {
+      A.castHurt += took;
+      if (A.castHurt >= S.interruptAt * R.health) {
+        const left = Math.min(A.special, S.windup);
+        A.specialCd[A.castSlot] = Math.round((S.interruptCooldown * (1000 + (S.interruptEarly * left) / S.windup)) / 1000);
+        A.special = 0;
+        events.push({ t: 'SpecialInterrupted', f: i, dmg: A.castHurt });
+        return;
+      }
+      if (A.castPush < S.pushbackMax) { A.special += S.pushback; A.castPush++; }
+    }
+    A.special--;
+  });
 }
 
 function raiseGuard(f, side, R, fresh) {
@@ -462,6 +533,7 @@ function upkeep(f, foe, i, R, events) {
   if (f.counterWindow > 0) f.counterWindow--;
   if (f.chainWindow > 0) f.chainWindow--;
   for (let s = 0; s < f.specialCd.length; s++) if (f.specialCd[s] > 0) f.specialCd[s]--;
+  if (f.specialRecover > 0) f.specialRecover--;
   if (f.evadeEnd < 99) f.evadeEnd++;
   if (f.buffer && --f.buffer.ttl <= 0) f.buffer = null;
 }

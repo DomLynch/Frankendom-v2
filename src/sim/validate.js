@@ -24,7 +24,11 @@ export const SCHEMA = {
   'rules': { keys: ['about', 'tickHz', 'health', 'death', 'stamina', 'guard', 'parry', 'feint', 'roll', 'backstep', 'posture', 'counter',
     'rear', 'stopHit', 'charge', 'buffer', 'stepInFrom', 'turn', 'kickArc', 'hitArc', 'cleanDrain', 'exhaustedHitStun', 'move', 'body'] },
   'sound': { keys: ['about', 'spriteSeconds', 'files', 'mix', 'events', 'synth', 'sprite'] },
-  'specials': { keys: ['about', 'cooldown', 'slots'], rows: { slots: ['press', 'skill', 'move', 'name'] } },
+  'specials': {
+    keys: ['about', 'windup', 'reach', 'slack', 'share', 'first', 'cooldown', 'recovery', 'interruptAt', 'interruptCooldown', 'interruptEarly',
+      'pushback', 'pushbackMax', 'react', 'staggerFloor', 'slots', 'pick', 'sounds'],
+    rows: { slots: ['press', 'skill', 'move', 'name', 'clip'], pick: ['skill', 'move', 'name', 'clip'] },
+  },
   'stage': { keys: ['source', 'sky', 'fog', 'ground', 'grid', 'ruler', 'light'] },
 };
 

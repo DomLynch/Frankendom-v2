@@ -49,7 +49,7 @@ newBout();
 
 const views = [createFighterView(scene, 0xb08a5a), createFighterView(scene, 0x7a5aa0)];
 const fx = createFx(scene, feelDef);
-const sound = createSound(soundDef);
+const sound = createSound(soundDef, specials);
 const blood = createBlood(scene, bloodDef);
 const input = createInput(controls);
 // the fight starts once both bodies are in, or after bodyWaitMs on capsules
@@ -156,7 +156,8 @@ function frame(t) {
     bar('po' + i, (f.posture / rules.posture.max) * 100);
   });
   specials.slots.forEach((s, i) => {
-    document.getElementById('pad-' + s.press)?.classList.toggle('cool', sim.state.fighters[0].specialCd[i] > 0);
+    const me = sim.state.fighters[0];
+    document.getElementById('pad-' + s.press)?.classList.toggle('cool', me.specialCd[i] > 0 || me.special > 0 || me.specialRecover > 0);
   });
   updateCamera(dt);
   camera.position.add(feel.offset);
