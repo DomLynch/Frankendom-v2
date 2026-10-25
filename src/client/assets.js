@@ -22,8 +22,9 @@ const once = (url) => {
 export async function loadBody(def, slot) {
   const g = await once(def.base + def.bodies[slot]);
   const root = cloneSkinned(g.scene);
+  const hide = new RegExp(def.hideMeshes);
   root.traverse((o) => {
-    if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; }
+    if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; o.visible = !hide.test(o.name); }
   });
   root.updateMatrixWorld(true);
   return root;
