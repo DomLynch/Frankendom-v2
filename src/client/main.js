@@ -74,30 +74,33 @@ const stopMs = (events) => {
   return ms * hitScale;
 };
 
-// V1 lock-on camera: behind the player, looking at the midpoint
-const cam = { yaw: 0, pos: new THREE.Vector3(), look: new THREE.Vector3(), init: false };
+// V1's live fight camera (data/camera.json): behind the player's heading, over the right shoulder, the gaze
+// between "ahead of the player" and the fighters' midpoint, pulled back as the gap opens
+const cam = { yaw: 0, pos: new THREE.Vector3(), look: new THREE.Vector3(), fit: 0, init: false };
 function updateCamera(dt) {
   const [p, q] = sim.state.fighters;
-  const gap = Math.max(camDef.gapFloor, Math.hypot(q.x - p.x, q.z - p.z));
-  const back = Math.max(camDef.back.floor, camDef.back.perGap * gap + camDef.back.base) * camDef.fightBack;
-  const up = Math.max(camDef.height.floor, camDef.height.perGap * gap) * camDef.fightBack;
-  // swung `orbit` rad around the player, so at close range the foe stays in view
-  const yaw = Math.atan2(p.x - q.x, p.z - q.z) + camDef.orbit;
-  const k = cam.init ? 1 - Math.exp(-camDef.follow * dt) : 1;
-  cam.yaw += Math.atan2(Math.sin(yaw - cam.yaw), Math.cos(yaw - cam.yaw)) * k;
-  const sx = Math.sin(cam.yaw), sz = Math.cos(cam.yaw);
-  // over the right shoulder, so the player never hides the foe
-  const tPos = new THREE.Vector3(p.x + sx * back + sz * camDef.side, up, p.z + sz * back - sx * camDef.side);
-  const tLook = new THREE.Vector3(
-    (p.x + q.x) / 2 + sx * camDef.lookShift + sz * camDef.lookSide,
-    camDef.lookY,
-    (p.z + q.z) / 2 + sz * camDef.lookShift - sx * camDef.lookSide,
-  );
-  cam.pos.lerp(tPos, k);
-  cam.look.lerp(tLook, k);
+  const c = viewW() < viewH() ? camDef.portrait : camDef.landscape;
+  const gap = Math.hypot(q.x - p.x, q.z - p.z);
+  const fitGoal = c.perSep * gap + c.perSize * Math.max(0, camDef.fighterSize - c.sizeFrom);
+  cam.fit = cam.init ? cam.fit + Math.max(-c.fitRate * dt, Math.min(c.fitRate * dt, fitGoal - cam.fit)) : fitGoal;
+  const raw = (c.back + cam.fit) * c.zoom, back = Math.min(c.maxBack, Math.max(c.minBack, raw));
+  const up = (c.up + cam.fit * 0.5) * c.zoom + Math.max(0, raw - back) * 0.5;   // what the cap takes off the distance goes into height
+  // V1 places the eye at hero - forward*back + (cos h, -sin h)*side (follow-camera.ts:80); with V2's heading that is the player's
+  // left, which puts the player right of centre and the foe clear on the left, as in V1's frame
+  const h = p.heading - camDef.orbit;
+  const fx = Math.sin(h), fz = Math.cos(h), sx = fz, sz = -fx;
+  const eye = new THREE.Vector3(p.x - fx * back + sx * c.side, up, p.z - fz * back + sz * c.side);
+  if (cam.init) cam.pos.lerp(eye, 1 - Math.exp(-camDef.follow * dt)); else cam.pos.copy(eye);
+  const ax = p.x + fx * c.ahead, az = p.z + fz * c.ahead;
+  cam.look.set(ax + ((p.x + q.x) / 2 - ax) * c.mid, c.lookY, az + ((p.z + q.z) / 2 - az) * c.mid);
   cam.init = true;
   camera.position.copy(cam.pos);
   camera.lookAt(cam.look);
+  const d = cam.look.clone().sub(cam.pos);
+  cam.yaw = Math.atan2(-d.x, -d.z);   // the stick is camera-relative: up on the stick = into the screen
+  // the picture is lifted off the thumb buttons by shiftY of the screen height
+  if (c.shiftY > 0) camera.setViewOffset(viewW(), viewH(), 0, Math.round(c.shiftY * viewH()), viewW(), viewH());
+  else camera.clearViewOffset();
 }
 
 const bar = (id, v) => { document.getElementById(id).style.width = Math.max(0, Math.min(100, v)) + '%'; };
