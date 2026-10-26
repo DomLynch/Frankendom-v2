@@ -210,10 +210,10 @@ export function createFx(scene, def) {
       }
       if (!on) { view.trail.visible = false; view.trailPts.length = 0; return; }
       view.sword.updateWorldMatrix(true, false);
-      const len = view.sword.geometry.parameters.height;
+      const [tipY, backY] = view.swordSpan;
       view.trailPts.unshift([
-        new THREE.Vector3(0, len / 2, 0).applyMatrix4(view.sword.matrixWorld),
-        new THREE.Vector3(0, -len / 4, 0).applyMatrix4(view.sword.matrixWorld),
+        new THREE.Vector3(0, tipY, 0).applyMatrix4(view.sword.matrixWorld),
+        new THREE.Vector3(0, backY, 0).applyMatrix4(view.sword.matrixWorld),
       ]);
       view.trailPts.length = Math.min(view.trailPts.length, T.samples);
       const pos = view.trail.geometry.attributes.position;

@@ -8,7 +8,7 @@ import { createFighterView, attachBody, drawFighter } from './render.js';
 import { createFx } from './fx.js';
 import { createSound } from './sound.js';
 import { createBlood } from './blood.js';
-import { loadBody, loadClips } from './assets.js';
+import { loadBody, loadClips, loadSword } from './assets.js';
 import { createSim } from '../sim/sim.js';
 import { createBrain, think } from '../sim/brain.js';
 
@@ -57,7 +57,10 @@ let loaded = 0;
 const started = performance.now();
 for (const [i, slot] of [[0, 'player'], [1, 'opponent']]) {
   loadBody(clips, slot, params.get('body') || clips.bodySet)
-    .then(async (body) => attachBody(views[i], body, await loadClips(clips, body), clips))
+    .then(async (body) => {
+      const [fitted, sword] = await Promise.all([loadClips(clips, body), loadSword(clips).catch((e) => (console.warn('sword', e), null))]);
+      attachBody(views[i], body, fitted, clips, sword);
+    })
     .catch((e) => console.warn('body', slot, e))
     .finally(() => loaded++);
 }

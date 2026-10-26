@@ -23,7 +23,7 @@ export function createFighterView(scene, color) {
   return { root, stand, mat, blade, base: new THREE.Color(color), body: null, mixer: null, actions: {}, current: null };
 }
 
-export function attachBody(view, body, clips, def) {
+export function attachBody(view, body, clips, def, swordModel) {
   view.root.remove(view.stand);
   view.root.add(body);
   view.body = body;
@@ -37,10 +37,16 @@ export function attachBody(view, body, clips, def) {
   }
   const grip = handGrip(body);
   if (grip) {
-    // a plain blade gripped across the palm, from the pinky side toward the index side
-    const sword = new THREE.Mesh(new THREE.BoxGeometry(0.035, def.sword.length, 0.012), view.blade.material);
-    sword.position.y = def.sword.length / 2 - def.sword.handle;
-    sword.castShadow = true;
+    // the blade gripped across the palm, from the pinky side toward the index side: the library sword,
+    // or a plain box if it didn't load. swordSpan = tip and guard heights along its +Y, for the trail
+    let sword = swordModel;
+    if (sword) view.swordSpan = [def.sword.tip, def.sword.guard];
+    else {
+      sword = new THREE.Mesh(new THREE.BoxGeometry(0.035, def.sword.length, 0.012), view.blade.material);
+      sword.position.y = def.sword.length / 2 - def.sword.handle;
+      sword.castShadow = true;
+      view.swordSpan = [sword.position.y + def.sword.length / 2, sword.position.y - def.sword.length / 4];
+    }
     grip.holder.add(sword);
     view.sword = sword;
   }
