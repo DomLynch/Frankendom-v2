@@ -123,7 +123,7 @@ test('a light out of a backstep takes the chained timing', () => {
 });
 
 // V1 origins/preview/main.ts:434-463 (the page walks the hero): 2.3 m/s forward, back at most 0.6 of it, strafe x0.7, run 5.2
-test('the walk: 2.3 m/s at the foe, 0.6 of that backing off, 0.7 of it strafing, 5.2 running', () => {
+test('the walk: the row\'s speed at the foe, 0.6 of that backing off, 0.7 of it strafing, 5.2 running', () => {
   const dist = (stick, ticks = 30, run = false) => {
     const sim = duel(8);
     const a = sim.state.fighters[0];
@@ -133,9 +133,10 @@ test('the walk: 2.3 m/s at the foe, 0.6 of that backing off, 0.7 of it strafing,
     return Math.hypot(a.x, a.z + 4);
   };
   const near = (x, y) => assert.ok(Math.abs(x - y) < 0.05, `${x} vs ${y}`);
-  near(dist({ sf: 1, ss: 0 }), 2.3 / 2);
-  near(dist({ sf: -1, ss: 0 }), 2.3 * 0.6 / 2);
-  near(dist({ sf: 0, ss: 1 }), 2.3 * 0.7 / 2);
+  const W = data.rules.move.walk;   // a row (Dom set 2.7 on 26 Oct; V1's Origins page walks 2.3)
+  near(dist({ sf: 1, ss: 0 }), W / 2);
+  near(dist({ sf: -1, ss: 0 }), W * 0.6 / 2);
+  near(dist({ sf: 0, ss: 1 }), W * 0.7 / 2);
   near(dist({ sf: 1, ss: 0 }, 30, true), 5.2 / 2);
 });
 
