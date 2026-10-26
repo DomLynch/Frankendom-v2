@@ -7,7 +7,7 @@
     "mixamo": { "rig": 106, "player": "custom/girlscout-t-masuyama-full-phone-mixamorig.glb", "opponent": "custom/kachujin-g-rosales-full-phone-mixamorig.glb" },
     "makehuman": { "rig": 106, "player": "makehuman/mh-male-01.glb", "opponent": "makehuman/mh-woman-02.glb" }
   },
-  "hideMeshes": "^Layer_(Sword|Scabbard)",
+  "hideMeshes": "^Layer_",
   "guardTilt": {
     "about": "V1 characters.ts:434-437 GUARD_TILT: one Guard clip, the side shown by radians added after the mixer: torso yaw (spine_01 -> mixamorigSpine, y), sword-arm pitch (upperarm_r -> mixamorigRightArm, x), chest pitch (spine_02 -> mixamorigSpine1, x)",
     "bones": { "yaw": "mixamorigSpine", "arm": "mixamorigRightArm", "spine": "mixamorigSpine1" },
@@ -23,7 +23,7 @@
     "length": 1.0, "handle": 0.12
   },
   "roles": {
-    "Armed":       { "file": "mixamo/clips/gladio/gl055-sword-and-shield-guard-idle.glb", "loop": true },
+    "Armed":       { "file": "mixamo/clips/104210901-ready-idle.glb", "loop": true },
     "ArmedWalk":   { "file": "mixamo/clips/124540901-walk.glb", "loop": true, "speed": 1.679 },
     "StrafeLeft":  { "file": "mixamo/clips/117610901-left-strafe.glb", "loop": true, "speed": 3.6 },
     "StrafeRight": { "file": "mixamo/clips/117610902-right-strafe.glb", "loop": true, "speed": 3.6 },

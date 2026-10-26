@@ -21,7 +21,9 @@ const params = new URLSearchParams(location.search);
 const swordPick = params.get('sword');
 if (swordPick === 'half') Object.assign(clips.sword, { file: 'assets/weapon-011.glb', grip: 0.09, guard: 0, tip: 0.75 });
 else if (['plain', 'crafted', 'ornate'].includes(swordPick)) clips.sword.file = `./assets/weapons/longsword-${swordPick}.glb`;
-const hitScale =params.has('hitstop') ? Number(params.get('hitstop')) : hitStop.scale;
+if (params.get('idle')) clips.roles.Armed.file = params.get('idle');   // try another idle clip: ?idle=mixamo/clips/<id>.glb
+if (params.get('layers') === '1') clips.hideMeshes = '^Layer_(Sword|Scabbard)';   // the placeholder armour pieces are hidden (data/clips.json hideMeshes); ?layers=1 shows them
+const hitScale = params.has('hitstop') ? Number(params.get('hitstop')) : hitStop.scale;
 const brainRow = behaviours.brains.find((b) => b.id === (params.get('brain') || 'easy'));
 const aiOff = params.get('ai') === 'off';   // off switch: the opponent stands still
 fetch('./build.txt?v=' + Date.now(), { cache: 'no-store' }).then((r) => (r.ok ? r.text() : '')).then((t) => { document.getElementById('build').textContent = t.slice(0, 7); }).catch(() => {});

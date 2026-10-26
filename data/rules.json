@@ -22,7 +22,7 @@
   "exhaustedHitStun": 36,
   "move": {
     "about": "The Origins page walks the hero (RPG-game trunk origins/preview/main.ts:434-463, Lead-confirmed 26 Oct: Dom compares the live Origins zone page), not the duel sim. The stick splits into forward (back capped at `back`) and strafe (x `strafe`), both doubled when running, at `walk` m/s, or `run` m/s doubled-halved when running; the heading is pulled to the foe at `turnPull`/s (lockPull), never snapped. He is rooted only in a swing's wind-up and active ticks: walking is free in recovery, stagger and guard (no guard slow, no exhaustion slow). `pace` is the duel sim's own speed for a lunge and a backstep; `knockbackSpeed` for a shove.",
-    "walk": 2.3, "run": 5.2, "strafe": 0.7, "back": 0.6, "turnPull": 6, "pace": 3, "knockbackSpeed": 3,
+    "walk": 2.7, "run": 5.2, "strafe": 0.7, "back": 0.6, "turnPull": 6, "pace": 3, "knockbackSpeed": 3,
     "recoveryWalk": true, "staggerWalk": true
   },
   "body": { "spacing": 0.85, "arenaRadius": 8, "spawnGap": 3.25 },
