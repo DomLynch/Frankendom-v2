@@ -35,7 +35,7 @@ export function createSim(data, seed = 1) {
 function makeFighter(R, x, z, heading) {
   return {
     x, z, heading,
-    hp: R.health, st: R.stamina.max, maxSt: R.stamina.max, wound: 0, legWound: false, attackFrom: null,
+    hp: R.health, st: R.stamina.max, maxSt: R.stamina.max, wound: 0, legWound: false, attackFrom: null, loiter: 0, lashed: false,
     posture: 0, postureHold: 0, rest: 0, exhausted: false,
     phase: 'ready', age: 0, fresh: false, stun: 0, hurtKind: null, chainFrom: null,
     move: null, chained: false, landed: false, parked: 0, charged: false, whiffHang: 0, hung: false,
@@ -107,8 +107,10 @@ function step(state, intents, moves, R) {
   for (const [f, foe, i] of [[a, b, 0], [b, a, 1]]) decide(f, foe, intents[i] || {}, moves, R, events, i);
   for (const [f, foe, i] of [[a, b, 0], [b, a, 1]]) advance(f, pre[1 - i], intents[i] || {}, moves, R);
   separate(a, b, R);
+  loiter(a, b, 0, R, events, state.over);
+  loiter(b, a, 1, R, events, state.over);
 
-  const snap = [structuredCloneLite(a), structuredCloneLite(b)];
+  const snap =[structuredCloneLite(a), structuredCloneLite(b)];
   contact(a, b, snap[0], snap[1], 0, moves, R, events, pre);
   contact(b, a, snap[1], snap[0], 1, moves, R, events, pre);
   specials(state.fighters, hpBefore, moves, R, events);
@@ -426,6 +428,25 @@ function stepBody(f, foe, dx, dz, d, R) {
   f.moved += Math.hypot(x - f.x, z - f.z);
   f.x = x; f.z = z;
   return true;
+}
+
+// V1 duel.ts:490-505, the lorarii: camping on the wall is whipped. Attacking, leaving the band or dying resets the clock.
+function loiter(f, foe, i, R, events, over) {
+  const L = R.wall.loiter, r = Math.hypot(f.x, f.z);
+  const still = f.hp > 0 && !over && r >= R.body.arenaRadius - R.wall.band && f.phase !== 'attack' && f.phase !== 'dead';
+  f.loiter = still ? f.loiter + 1 : 0;
+  if (!still) f.lashed = false;
+  const lead = f.lashed ? L.raiseAgain : L.raise;
+  if (still && f.loiter === L.ticks - lead) events.push({ t: 'WhipRaised', f: i, lead });
+  if (f.loiter < L.ticks) return;
+  f.loiter = L.ticks - L.again;   // the next lash comes `again` ticks later while he stays
+  f.lashed = true;
+  f.hp = Math.max(1, f.hp - L.chip);
+  gainPosture(f, L.posture);
+  events.push({ t: 'Whipped', f: i, dmg: L.chip });
+  // the shove drives him back into the fight: toward the foe when he is near, else toward the centre; a man already at grips is lashed but not moved
+  const g = dist(f, foe), toward = g < L.into ? { x: (foe.x - f.x) / g, z: (foe.z - f.z) / g } : { x: -f.x / r, z: -f.z / r };
+  if (g >= 1) { f.x += toward.x * L.shove; f.z += toward.z * L.shove; }
 }
 
 // at the wall with the direction pointing out of the ring: the wall is behind a step that way (V1 duel.ts:215)

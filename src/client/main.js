@@ -79,8 +79,14 @@ const stopMs = (events) => {
 // V1's live fight camera (data/camera.json): behind the player's heading, over the right shoulder, the gaze
 // between "ahead of the player" and the fighters' midpoint, pulled back as the gap opens
 const cam = { yaw: 0, pos: new THREE.Vector3(), look: new THREE.Vector3(), fit: 0, init: false };
+// V1 renders the pair between the last two ticks, by the frame's leftover time (src/main.ts:529): a 60 Hz sim never judders on a 120 Hz screen
+const prev = [{ x: 0, z: 0, h: 0 }, { x: 0, z: 0, h: 0 }];
+const markPrev = () => sim.state.fighters.forEach((f, i) => { prev[i].x = f.x; prev[i].z = f.z; prev[i].h = f.heading; });
+const wrapPi = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+let shown = sim.state.fighters;
+markPrev();
 function updateCamera(dt) {
-  const [p, q] = sim.state.fighters;
+  const [p, q] = shown;
   const c = viewW() < viewH() ? camDef.portrait : camDef.landscape;
   const gap = Math.hypot(q.x - p.x, q.z - p.z);
   const fitGoal = c.perSep * gap + c.perSize * Math.max(0, camDef.fighterSize - c.sizeFrom);
@@ -131,6 +137,7 @@ function frame(t) {
       const me = sim.state.fighters[0], foe = sim.state.fighters[1];
       // the stick is relative to the foe, as in V1 (the lock-on keeps the hero's heading on the foe): up = at him, sideways = round him
       const yaw = Math.atan2(me.x - foe.x, me.z - foe.z);
+      markPrev();
       const events = sim.step([input.sample(yaw, me), aiOff ? {} : think(brain, sim, 1)]);
       fx.onEvents(events, sim);
       for (const e of events) if (e.t === 'Blocked' || e.t === 'Parried') reactTo(views[e.d], e.t === 'Blocked' ? 'blocked' : 'parried');
@@ -140,7 +147,7 @@ function frame(t) {
       if (killed) cam.kill = { victim: killed.f, t: 0 };
       const ms = stopMs(events);
       if (ms > 0) { frozenUntil = t + ms; acc = 0; break; }
-      if (sim.state.over && cam.kill && cam.kill.t >= camDef.kill.nextBout) { newBout(); blood.clear(); cam.kill = null; }
+      if (sim.state.over && cam.kill && cam.kill.t >= camDef.kill.nextBout) { newBout(); markPrev(); blood.clear(); cam.kill = null; }
     }
   }
   // the result card, once the kill camera has settled (V1: nothing over the body before that)
@@ -153,8 +160,12 @@ function frame(t) {
   }
   const feel = fx.update(dt, sim);
   blood.update(dt);
+  const alpha = frozen ? 1 : Math.min(1, acc / STEP);
+  shown = sim.state.fighters.map((f, i) => Object.assign(Object.create(f), {
+    x: prev[i].x + (f.x - prev[i].x) * alpha, z: prev[i].z + (f.z - prev[i].z) * alpha, heading: prev[i].h + wrapPi(f.heading - prev[i].h) * alpha,
+  }));
   sim.state.fighters.forEach((f, i) => {
-    drawFighter(views[i], f, sim, clips, dt, frozen, anim);
+    drawFighter(views[i], shown[i], sim, clips, dt, frozen, anim);
     fx.applyPose(views[i], i, f);
     fx.trail(views[i], f, sim);
     bar('hp' + i, (f.hp / rules.health) * 100);
