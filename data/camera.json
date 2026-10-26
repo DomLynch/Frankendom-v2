@@ -4,7 +4,7 @@
   "near": 0.1,
   "far": 180,
   "follow": 4,
-  "portrait":  { "back": 6.5, "up": 2.8, "side": 1.8, "ahead": 2, "lookY": 1, "mid": 0.5, "perSep": 0.4,  "perSize": 0.5,  "sizeFrom": 1.8, "fitRate": 1.5, "minBack": 5.5, "maxBack": 12, "shiftY": 0.12, "zoom": 1 },
+  "portrait":  { "back": 6.5, "up": 2.8, "side": 1.8, "ahead": 2, "lookY": 1, "mid": 0.5, "perSep": 0.4,  "perSize": 0.5,  "sizeFrom": 1.8, "fitRate": 1.5, "minBack": 5.5, "maxBack": 12, "shiftY": 0.12, "zoom": 0.9 },
   "landscape": { "back": 5.5, "up": 1.8, "side": 0.9, "ahead": 2, "lookY": 1, "mid": 0.5, "perSep": 0.35, "perSize": 0.45, "sizeFrom": 1.8, "fitRate": 1.5, "minBack": 4.5, "maxBack": 10, "shiftY": 0.05, "zoom": 1.25 },
   "fighterSize": 1.8,
   "kill": { "source": "src/fight/camera.ts DEFAULT_DOLLY, SETTLE; lookYPortrait", "push": 0.38, "slide": 0.95, "turn": 0.6, "over": 1.3, "settle": 1.5, "lookY": 1.3, "nextBout": 4.5, "nextBoutNote": "V2-only, inferred: V1 waits for a Rematch tap; V2 starts the next bout this many seconds after the kill" },

@@ -13,6 +13,8 @@ const matches = [
   [{ brain: 'easy' }, { dummy: 'turtle' }],
   [{ brain: 'hard' }, { dummy: 'turtle' }],
   [{ brain: 'easy' }, { dummy: 'spammer' }],
+  [{ brain: 'novice' }, { dummy: 'spammer' }],
+  [{ brain: 'novice' }, { dummy: 'idle' }],
   [{ brain: 'hard' }, { dummy: 'spammer' }],
   [{ brain: 'hard' }, { dummy: 'roller' }],
 ];

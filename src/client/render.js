@@ -123,8 +123,8 @@ function combatOf(f, view, sim, def, A) {
     const role = def.paths[path] || def.paths[m.path] || def.paths.heavy_overhead;
     const total = t.windup + t.active + t.recovery, p = Math.min(1, f.age / total), c = t.windup / total;
     // V1 swingProgress: sim progress through a slow wind-up, a snap through contact, a slow tail
-    const [, hit, s0] = scrub(role, p), W = A.swing;
-    const keys = [[0, s0], [c * W.windupKey, s0 + (hit - s0) * W.windupValue], [c, hit], [Math.min(1, c + W.followKey), hit + (1 - hit) * W.followValue], [1, 1]];
+    const [row, hit, s0] = scrub(role, p), W = A.swing, end = row.end ?? 1;   // `end` cuts the clip's tail so the follow-through plays near natural speed
+    const keys = [[0, s0], [c * W.windupKey, s0 + (hit - s0) * W.windupValue], [c, hit], [Math.min(1, c + W.followKey), hit + (end - hit) * W.followValue], [1, end]];
     let frac = 1;
     for (let i = 1; i < keys.length; i++) if (p <= keys[i][0]) { const [x, y] = keys[i - 1], [x1, y1] = keys[i]; frac = x1 > x ? y + (y1 - y) * (p - x) / (x1 - x) : y1; break; }
     const snap = f.age >= t.windup - W.snapBefore && f.age <= t.windup + W.snapAfter;

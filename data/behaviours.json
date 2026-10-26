@@ -28,6 +28,7 @@
     "tellReaction": 99, "spamRun": 0, "spamBoth": 0, "specials": 1
   },
   "brains": [
+    { "id": "novice", "reaction": 40, "accuracy": 0.3, "parry": 0.03, "dodge": 0.05, "aggression": 0.3, "pressure": 0, "discipline": 70, "lapse": 0.6, "read": 0.2 },
     { "id": "easy", "reaction": 24, "accuracy": 0.5, "parry": 0.1, "dodge": 0.1, "aggression": 0.45, "pressure": 0, "discipline": 60, "lapse": 0.45, "read": 0.5 },
     { "id": "normal", "reaction": 14, "accuracy": 0.75, "parry": 0.3, "dodge": 0.2, "aggression": 0.65, "pressure": 0, "discipline": 50, "lapse": 0.3, "read": 0.7 },
     { "id": "hard", "reaction": 10, "accuracy": 0.95, "parry": 0.6, "dodge": 0.35, "aggression": 0.85, "pressure": 0.5, "discipline": 40, "lapse": 0.1, "read": 0.85 }
