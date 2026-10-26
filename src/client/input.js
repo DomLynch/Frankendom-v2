@@ -102,7 +102,9 @@ export function createInput(def, el = document.body) {
     sp.decided = true;
     s.holding = true;
     const offUp = Math.abs(Math.atan2(dx, -dy)) * 180 / Math.PI;
-    if (offUp <= sk.stabHalfAngleDeg) press('thrust');
+    // held past the tap time, a slide is a directional heavy (hold + left/right = that cut, hold + up = the stab); sooner it is a light
+    if (now() - sp.t >= heavyAfter()) press('heavy', offUp <= sk.stabHalfAngleDeg ? 'thrust' : dx < 0 ? 'left' : 'right');
+    else if (offUp <= sk.stabHalfAngleDeg) press('thrust');
     else press('light');   // Origins sends every light as a plain 'light' (main.ts:447): the cuts alternate, the swipe's side is dropped
   });
   const endStrike = (e) => {
@@ -175,7 +177,11 @@ export function createInput(def, el = document.body) {
     if (e.repeat) return;
     s.keys.add(e.code);
     if (is(e.code, 'light')) press('light');
-    else if (is(e.code, 'heavy')) { heavyKey = now(); s.holding = true; press('heavy'); }
+    else if (is(e.code, 'heavy')) {
+      heavyKey = now(); s.holding = true;
+      const ks = keyStick();   // heavy key + A/D = that cut, + W = the stab
+      press('heavy', ks.x ? (ks.x < 0 ? 'left' : 'right') : ks.y < 0 ? 'thrust' : null);
+    }
     else if (is(e.code, 'thrust')) { s.holding = true; press('thrust'); }
     else if (is(e.code, 'kick')) press('kick');
     else if (is(e.code, 'special1')) press('special1');
@@ -196,9 +202,12 @@ export function createInput(def, el = document.body) {
   };
 
   // the strike held past tapMs becomes a heavy (sooner inside a counter or punish window)
+  // a hold arms the heavy at tapMs (counterHoldMs inside a counter window); outside a window it waits sk.heavyGraceMs for a slide to
+  // pick a side, then fires V1's overhead
+  const heavyAfter = () => (s.windows.counter ? sk.counterHoldMs : sk.tapMs);
   function heldHeavy() {
     if (!sp || sp.decided) return;
-    if (now() - sp.t >= (s.windows.counter ? sk.counterHoldMs : sk.tapMs)) {
+    if (now() - sp.t >= heavyAfter() + (s.windows.counter ? 0 : sk.heavyGraceMs)) {
       sp.decided = true;
       s.holding = true;
       press('heavy');

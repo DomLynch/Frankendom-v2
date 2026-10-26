@@ -5,7 +5,7 @@
 
 const MOVE_KEYS = ['id', 'direction', 'path', 'chainPath', 'chained', 'chain', 'windup', 'active', 'recovery', 'damage', 'stamina',
   'staminaDamage', 'stagger', 'poise', 'poiseFrom', 'breaksGuard', 'chip', 'parryable', 'knockback', 'stepIn', 'feintUntil',
-  'reach', 'vsGuard', 'posture', 'chamber', 'charges'];
+  'reach', 'vsGuard', 'posture', 'chamber', 'charges', 'blade', 'bladeFrom'];
 const BRAIN_KEYS = ['id', 'reaction', 'accuracy', 'parry', 'dodge', 'aggression', 'pressure', 'discipline', 'lapse', 'read',
   'feint', 'guard', 'disengage', 'circle', 'interrupt', 'kick', 'dash', 'anticipate', 'tellReaction', 'spamRun', 'spamBoth', 'specials'];
 const DIAL_KEYS = ['startLastGap', 'startDecision', 'startWait', 'disengageTicks', 'retreatTicks', 'waitBase', 'waitSpread', 'waitAggrCeil',
@@ -90,7 +90,7 @@ export function validateAll(files) {
   }
   for (const s of files.specials?.slots || []) if (!moves.has(s.move)) errors.push(`specials.${s.press}: no move "${s.move}"`);
   if (files.blades) {
-    for (const m of moves.values()) for (const p of [m.path, m.chainPath]) if (p && !files.blades.kinds[p]) errors.push(`blades.kinds: no sweep for "${p}" (move ${m.id})`);
+    for (const m of moves.values()) for (const p of [m.blade || m.path, m.chainPath]) if (p && !files.blades.kinds[p]) errors.push(`blades.kinds: no sweep for "${p}" (move ${m.id})`);
     for (const [k, frames] of Object.entries(files.blades.kinds)) if (!frames.every((f) => f.length === 6)) errors.push(`blades.kinds.${k}: every frame is [hilt xyz, tip xyz]`);
   }
   const clips = files.clips;

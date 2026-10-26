@@ -3,7 +3,7 @@
 // frame clock, so effects keep moving while the sim is frozen by hit-stop.
 import * as THREE from 'three';
 
-const HEAVY = new Set(['heavy_overhead', 'heavy_riposte', 'heavy_counter', 'critical', 'skill_cleave']);
+const HEAVY = new Set(['heavy_overhead', 'heavy_right', 'heavy_left', 'heavy_thrust', 'heavy_riposte', 'heavy_counter', 'critical', 'skill_cleave']);
 const UP = new THREE.Vector3(0, 1, 0);
 
 export function createFx(scene, def) {

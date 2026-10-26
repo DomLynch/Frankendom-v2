@@ -1,7 +1,7 @@
 // V1's combat audio (data/sound.json): one sample sprite, cues played from sim events, V1's mix chain
 // (compressor -> makeup -> balance, plus a room send) and the synth thump and chime on top.
 // iOS only allows audio after a touchend, click or keydown (V1 main.ts ~l.100), so the context starts there.
-const HEAVY = new Set(['heavy_overhead', 'heavy_riposte', 'heavy_counter', 'critical', 'skill_cleave']);
+const HEAVY = new Set(['heavy_overhead', 'heavy_right', 'heavy_left', 'heavy_thrust', 'heavy_riposte', 'heavy_counter', 'critical', 'skill_cleave']);
 
 export function createSound(def, specials, base = './') {
   let ctx = null, buffer = null, master = null, room = null;

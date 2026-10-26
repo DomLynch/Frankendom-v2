@@ -18,7 +18,7 @@ import { createRng } from './rng.js';
 import { bladeAge } from './timing.js';
 
 const MIRROR = { left: 'right', right: 'left', overhead: 'overhead', thrust: 'thrust', low: 'low' };
-const HEAVY_CLASS = new Set(['heavy_overhead', 'heavy_riposte', 'heavy_counter', 'critical']);
+const HEAVY_CLASS = new Set(['heavy_overhead', 'heavy_right', 'heavy_left', 'heavy_thrust', 'heavy_riposte', 'heavy_counter', 'critical']);
 
 export function createSim(data, seed = 1) {
   const specials = data.specials || { cooldown: 0, slots: [] };
@@ -138,6 +138,10 @@ function resolvePress(f, press, intent) {
   if (press === 'heavy') {
     if (f.punish > 0) return f.punishKind === 'critical' ? 'critical' : 'heavy_riposte';
     if (f.counterWindow > 0) return 'heavy_counter';
+    // Dom 26 Oct: hold + a slide picks a directional heavy (the same clips as the lights); a plain hold stays V1's overhead
+    if (intent.side === 'left') return 'heavy_left';
+    if (intent.side === 'right') return 'heavy_right';
+    if (intent.side === 'thrust') return 'heavy_thrust';
     return 'heavy_overhead';
   }
   if (press === 'thrust') return f.punish > 0 ? 'riposte' : 'thrust';
@@ -530,10 +534,10 @@ function contact(att, def, A, D, ai, moves, R, events, pre) {
   const m = moves[A.move], t = timing(m, A);
   if (A.age < t.windup || A.age >= t.windup + t.active) return;
   const di = 1 - ai;
-  const kind = A.chained && m.chainPath ? m.chainPath : m.path;
+  const kind = A.chained && m.chainPath ? m.chainPath : m.blade || m.path;   // a directional heavy swings along its light's baked blade
   let loc = null;
   // the clip-length timing set stretches the move's phases; V1's baked blade frames follow them (m.v1 = V1's windows)
-  const v1 = m.v1 && (A.chained && m.v1.chained ? m.v1.chained : m.v1), ageOf = v1 ? (age) => bladeAge(age, t, v1) : (age) => age;
+  const v1 = m.bladeFrom || (m.v1 && (A.chained && m.v1.chained ? m.v1.chained : m.v1)), ageOf = v1 ? (age) => bladeAge(age, t, v1) : (age) => age;
   if (kind && R.blades) loc = bladeLocation(R.blades, kind, A, D, pre[ai], pre[di], ageOf);
   else if (dist(A, D) <= m.reach && offFacing(A, D) <= (m.id === 'kick' ? R.kickArc : R.hitArc)) loc = 'torso';   // the kick (no blade), or a harness with no blade tables
   if (!loc) {
