@@ -44,7 +44,7 @@ function makeFighter(R, x, z, heading) {
     // a special: per-slot cooldowns (ready `first` ticks into the fight), the cast's windup left, its slot, damage taken while
     // casting, pushbacks used, and the recovery after release in which no attack is legal
     specialCd: (R.specials.slots || []).map(() => R.specials.first || 0), special: 0, castSlot: -1, castHurt: 0, castPush: 0, specialRecover: 0,
-    punish: 0, punishKind: null, counterWindow: 0, chainWindow: 0, lastLight: 'left', evadeEnd: 99,
+    punish: 0, punishKind: null, counterWindow: 0, chainWindow: 0, lastLight: 'left', lastMove: null, evadeEnd: 99,
     buffer: null, rollX: 0, rollZ: 0, speed: 0, moved: 0, sprinted: false,
   };
 }
@@ -131,7 +131,7 @@ const placeOf = (f) => ({ x: f.x, z: f.z, heading: f.heading });
 function resolvePress(f, press, intent) {
   if (press === 'light') {
     if (f.punish > 0) return 'slash_riposte';
-    const side = intent.side || (f.lastLight === 'right' ? 'left' : 'right');
+    const side = intent.side || (f.lastMove === 'light_right' ? 'left' : 'right');   // V1 duel.ts:260: after anything but a right cut, the next plain light cuts right
     return side === 'left' ? 'light_left' : 'light_right';
   }
   if (press === 'heavy') {
@@ -153,7 +153,7 @@ function legal(f, press, moveId, moves, R) {
   if (moveId) return (standing || backTail) && f.st >= moves[moveId].stamina;
   if (press === 'dodge') return (standing && f.st >= R.roll.cost) || (f.phase === 'backstep' && f.st >= R.roll.cost - R.backstep.cost);
   if (press === 'backstep') return standing && f.st >= R.backstep.cost;
-  if (press === 'parry') return standing && f.exposed === 0;
+  if (press === 'parry') return f.phase === 'ready' && f.exposed === 0;   // a fresh parry only from standing: a held guard never re-opens the window (V1 duel.ts:263)
   return false;
 }
 
@@ -306,8 +306,9 @@ function startAttack(f, foe, moveId, moves, R, events, i) {
   f.guardSide = null;
   f.heading = turnToward(f.heading, angleTo(f, foe), R.turn.start);
   if (isLight) f.lastLight = m.direction;
-  if (moveId === 'slash_riposte' || moveId === 'riposte' || moveId === 'heavy_riposte' || moveId === 'critical') { f.punish = 0; f.punishKind = null; }
-  if (moveId === 'heavy_counter') f.counterWindow = 0;
+  f.lastMove = moveId;
+  // every attack starts through one door: no swing inherits the last one's punish, critical or counter window (V1 duel.ts:299 beginAttack)
+  f.punish = 0; f.punishKind = null; f.counterWindow = 0;
   f.chainWindow = 0;
   events.push({ t: 'Swing', f: i, move: moveId, chained: f.chained });
 }
@@ -353,13 +354,14 @@ function advance(f, foe, intent, moves, R) {
       f.move = null;
     }
     // rooted through the wind-up and the active ticks only: the walk is free again in recovery
-    if (f.phase === 'attack' && R.move.recoveryWalk && f.age >= t.windup + t.active) walkBody(f, foe, intent, R, dt);
+    // (the tick the swing ends walks too: V1 expires the phase first, then moves by the new one)
+    if (R.move.recoveryWalk && (f.phase === 'ready' || f.age >= t.windup + t.active)) walkBody(f, foe, intent, R, dt);
     return;
   }
   if (f.phase === 'roll' || f.phase === 'backstep') {
     bump(f);
     const roll = f.phase === 'roll';
-    if (f.age >= (roll ? R.roll.ticks : R.backstep.ticks)) { enter(f, 'ready'); f.evadeEnd = 0; return; }
+    if (f.age >= (roll ? R.roll.ticks : R.backstep.ticks)) { enter(f, 'ready'); f.evadeEnd = 0; walkBody(f, foe, intent, R, dt); return; }
     if (roll) {
       if (stepTo(f.rollX, f.rollZ, R.move.run)) f.heading = Math.atan2(f.rollX, f.rollZ);
     } else {
@@ -432,9 +434,10 @@ function stepBody(f, foe, dx, dz, d, R, cap = true) {
   const r = Math.hypot(x, z);
   if (r > R.body.arenaRadius) { x *= R.body.arenaRadius / r; z *= R.body.arenaRadius / r; }
   if (Math.hypot(x - foe.x, z - foe.z) < min - 1e-8) return false;
-  f.moved += Math.hypot(x - f.x, z - f.z);
+  const travelled = Math.hypot(x - f.x, z - f.z);
+  f.moved += travelled;
   f.x = x; f.z = z;
-  return true;
+  return travelled > 1e-9;   // a step the wall or the ring held in place did not move him (V1 duel.ts:453: moved.distance > body.distance)
 }
 
 // V1 duel.ts:490-505, the lorarii: camping on the wall is whipped. Attacking, leaving the band or dying resets the clock.
