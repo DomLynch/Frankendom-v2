@@ -1,0 +1,12 @@
+{
+  "about": "How a body is posed, from V1 characters.ts (RPG-game trunk 82a994d15). No crossfades: every clip plays all the time and its weight eases toward a target at `weightRate` /s (exp). Locomotion blends idle, walk, the two strafes and run by the smoothed travel speed; the combat clip fades in over progress x `fadeIn` and out over (1 - progress) x `fadeOut`, snapping to full through the blade's active ticks. Swings are scrubbed by sim progress through the keys below (a slow wind-up, a snap through contact, a slow tail) instead of played at a constant rate.",
+  "weightRate": 24,
+  "speedRate": 14,
+  "tiltRate": 16,
+  "stepMax": 0.1,
+  "fadeIn": 12,
+  "fadeOut": 10,
+  "gait": { "knots": [0, 1.7, 3, 5.2], "runFrom": 3.2, "runTo": 4, "walkRateMin": 0.25, "runRateMin": 0.5, "stopBelow": 0.015 },
+  "swing": { "windupKey": 0.7, "windupValue": 0.44, "followKey": 0.16, "followValue": 0.56, "snapBefore": 1, "snapAfter": 4 },
+  "react": { "blocked": 12, "parried": 18, "deflected": 36, "deflectFrom": 0.35 }
+}

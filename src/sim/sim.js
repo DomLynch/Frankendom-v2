@@ -324,6 +324,7 @@ function startRoll(f, foe, intent, R, fromBackstep) {
 // foe = where the other fighter stood when the tick began: every step is blocked against that, so neither is favoured by order
 function advance(f, foe, intent, moves, R) {
   f.moved = 0;
+  f.vx = f.vz = 0;   // how fast the body walked this tick (m/s, world frame): the renderer reads it for the gait
   f.sprinted = false;
   if (f.phase === 'dead') return;
   const dt = 1 / R.tickHz;
@@ -386,8 +387,10 @@ function advance(f, foe, intent, moves, R) {
   // the speed the gait is shown at is the full-tilt pace: the same scaling V1 puts on the stick (guard, exhaustion, a leg wound)
   const scale = (guarding ? R.guard.speed : 1) * slow;
   const mps = running ? R.move.run : walk;
-  const gap0 = dist(f, foe);
+  const gap0 = dist(f, foe), x0 = f.x, z0 = f.z;
   const moved = mag > 0 ? stepTo(dxs * mag * scale, dzs * mag * scale, mps) : false;
+  f.vx = (f.x - x0) / dt;
+  f.vz = (f.z - z0) / dt;
   f.speed = mag > 0 ? mps * mag * scale : 0;
   if (running) {
     if (moved) {

@@ -48,7 +48,7 @@
   "states": {
     "idle": "Armed", "walk": "ArmedWalk", "strafeLeft": "StrafeLeft", "strafeRight": "StrafeRight", "run": "Run",
     "guard": "Guard",
-    "blockHit": "BlockImpact", "parry": "Parry", "parried": "Deflected", "roll": "Roll", "backstep": "Deflected",
+    "blockHit": "BlockImpact", "parry": "Parry", "parried": "Deflected", "roll": "Roll", "backstep": "Roll",
     "hurt": "Hit", "stunned": "Deflected", "exhausted": "Deflected", "dead": "Death"
   },
   "paths": {
