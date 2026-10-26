@@ -11,7 +11,7 @@ const easy = data.behaviours.brains.find((b) => b.id === 'easy');
 // two brains fight; returns the event log and final state
 function bout(seed, ticks) {
   const sim = createSim(data, seed);
-  const brains = [createBrain(easy, seed * 2 + 1), createBrain(easy, seed * 2 + 2)];
+  const brains = [createBrain(easy, seed * 2 + 1, data.behaviours), createBrain(easy, seed * 2 + 2, data.behaviours)];
   const log = [];
   for (let i = 0; i < ticks && !sim.state.over; i++) {
     for (const e of sim.step([think(brains[0], sim, 0), think(brains[1], sim, 1)])) log.push([sim.state.tick, e]);
