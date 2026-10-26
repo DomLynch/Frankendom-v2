@@ -18,7 +18,7 @@ test('the stored clip set is what the clips derive (run scripts/derive-timings.m
 test('the clip set pins the numbers Dom and Strategy signed off (26 Oct)', () => {
   const m = T.sets.clip.moves;
   assert.deepEqual([m.light_right.windup, m.light_right.active, m.light_right.recovery], [26, 5, 39]);
-  assert.deepEqual([m.thrust.windup, m.thrust.active, m.thrust.recovery], [52, 6, 57]);
+  assert.deepEqual([m.thrust.windup, m.thrust.active, m.thrust.recovery], [32, 6, 90]);   // Standing Torch Melee Attack Stab, mirrored (26 Oct)
   assert.deepEqual(T.sets.clip.specials, { cleave: { windup: 40, recovery: 86 }, reaping: { windup: 40, recovery: 125 }, stomp: { windup: 61, recovery: 119 }, lunge: { windup: 19, recovery: 105 } });
   assert.equal(T.sets.clip.roll.ticks, 84);
 });
@@ -27,7 +27,7 @@ test('directional heavies: the light clip with a x1.5 wind-up in the clip set, V
   const m = T.sets.clip.moves;
   assert.deepEqual([m.heavy_right.windup, m.heavy_right.active, m.heavy_right.recovery], [39, 5, 39]);
   assert.deepEqual([m.heavy_left.windup, m.heavy_left.recovery], [39, 39]);
-  assert.deepEqual([m.heavy_thrust.windup, m.heavy_thrust.active, m.heavy_thrust.recovery], [78, 6, 57]);
+  assert.deepEqual([m.heavy_thrust.windup, m.heavy_thrust.active, m.heavy_thrust.recovery], [48, 6, 90]);
   const v1 = Object.fromEntries(data.moves.moves.map((x) => [x.id, x]));
   assert.deepEqual([v1.heavy_right.windup, v1.heavy_right.active, v1.heavy_right.recovery], [32, 5, 31]);
   assert.equal(v1.heavy_right.damage, v1.heavy_overhead.damage);   // the heavy's damage, stagger and charge come with them

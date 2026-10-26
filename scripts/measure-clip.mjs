@@ -24,12 +24,13 @@ await pg.route(/opentrident\.org/, async (route) => {
 await pg.goto(`http://localhost:${port}/?ai=off`);
 await pg.waitForTimeout(3000);
 for (const file of files) {
-  const res = await pg.evaluate(async (file) => {
+  const res = await pg.evaluate(async (arg) => {
+    const mirror = arg.endsWith(':mirror'), file = mirror ? arg.slice(0, -7) : arg;   // <clip>:mirror measures the clip mirrored (a left-handed clip made right-handed)
     const THREE = await import('three');
     const A = await import('/src/client/assets.js');
     const def = await (await fetch('/data/clips.json')).json();
     const body = await A.loadBody(def, 'player');
-    const clips = await A.loadClips({ ...def, roles: { X: { file } } }, body);
+    const clips = await A.loadClips({ ...def, roles: { X: { file, mirror } } }, body);
     const clip = clips.X;
     const mixer = new THREE.AnimationMixer(body), act = mixer.clipAction(clip); act.play();
     const hand = body.getObjectByName('mixamorigRightHand'), hips = body.getObjectByName('mixamorigHips'), foot = body.getObjectByName('mixamorigRightFoot');
