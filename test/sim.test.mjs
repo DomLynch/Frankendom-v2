@@ -153,6 +153,25 @@ test('he is rooted through a swing\'s wind-up and active ticks, and walks again 
   assert.ok(a.phase === 'attack' && zr - a.z > 0.1, `walked back in recovery: ${zr - a.z}`);
 });
 
+test('a parry press inside a held guard does not re-open the parry window', () => {
+  const sim = duel(3);
+  const a = sim.state.fighters[0];
+  run(sim, 1, { press: 'parry', guard: 'left' });
+  run(sim, 55, { guard: 'left' });
+  assert.equal(a.phase, 'guard');
+  run(sim, 1, { press: 'parry', guard: 'left' });
+  assert.equal(a.parrying, false);
+  assert.ok(a.age > 50);
+});
+
+test('any attack clears a leftover punish window', () => {
+  const sim = duel(3);
+  const a = sim.state.fighters[0];
+  a.punish = 79; a.punishKind = 'riposte';
+  sim.step([{ press: 'kick' }, idle]);
+  assert.equal(a.punish, 0);
+});
+
 test('a fighter cannot walk through the other: the 0.85 m ring holds', () => {
   const sim = duel(1.2);
   const [a, b] = sim.state.fighters;
