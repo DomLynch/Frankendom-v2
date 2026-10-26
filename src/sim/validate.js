@@ -20,7 +20,7 @@ const READ_KEYS = ['feint', 'after', 'parry', 'guardTicks', 'guardShare', 'roll'
 
 // file -> { keys: top-level keys, rows: { arrayKey: row keys }, maps: { objectKey: its keys } }
 export const SCHEMA = {
-  'anim': { keys: ['about', 'weightRate', 'speedRate', 'tiltRate', 'weightFloor', 'ground', 'stepMax', 'fadeIn', 'fadeOut', 'rollFadeOut', 'gait', 'swing', 'react'] },
+  'anim': { keys: ['about', 'blendMs', 'settleMs', 'speedRate', 'tiltRate', 'weightFloor', 'ground', 'stepMax', 'gait', 'swing', 'react'] },
   'blood': { keys: ['about', 'spray', 'floor'] },
   'behaviours': {
     keys: ['about', 'dials', 'read', 'fight', 'defaults', 'brains'], rows: { brains: BRAIN_KEYS },

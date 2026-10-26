@@ -103,7 +103,13 @@ function handGrip(body) {
 // What the combat layer is doing now. Returns { role, fade (target weight of that clip), frac (scrub position as a clip
 // fraction, null = let it run), snap (weight jumps, no ease), guard (side tilt) }, or null when only locomotion shows.
 function combatOf(f, view, sim, def, A) {
-  const fade = (p, out = true) => Math.min(1, p * A.fadeIn, out ? (1 - p) * A.fadeOut : 1);
+  // the combat clip's target weight: in over blendMs[key].in after the start, out over .out before the end (A1: per-transition ms rows,
+  // none above 150; a roll-to-run's longer run-out settle is the one named exception, settleMs)
+  const ms = (ticks) => (ticks * 1000) / sim.rules.tickHz;
+  const fade = (age, total, key, out = true) => {
+    const B = A.blendMs[key];
+    return Math.min(1, ms(age) / B.in, out ? ms(total - age) / (A.settleMs?.[key] ?? B.out) : 1);
+  };
   if (f.phase === 'dead') return { role: def.states.dead, fade: 1, free: true };
   // a special: its clip runs start..strike over the windup (longer if a hit pushed it back), then strike..end over the recovery
   const S = sim.specials, slot = S && f.castSlot >= 0 ? S.slots[f.castSlot] : null;
@@ -112,9 +118,10 @@ function combatOf(f, view, sim, def, A) {
     return [row, hit, s0, p];
   };
   if (slot && (f.special > 0 || (f.specialRecover > 0 && f.phase === 'ready'))) {
-    const wind = f.special > 0, sw = slot.windup ?? S.windup, p = wind ? 1 - Math.min(f.special, sw) / sw : 1 - f.specialRecover / (slot.recovery ?? S.recovery);
+    const wind = f.special > 0, sw = slot.windup ?? S.windup, sr = slot.recovery ?? S.recovery, p = wind ? 1 - Math.min(f.special, sw) / sw : 1 - f.specialRecover / sr;
     const [row, hit, s0] = scrub(slot.clip, p);
-    return { role: slot.clip, fade: wind ? fade(p, false) : fade(p), frac: wind ? s0 + p * (hit - s0) : hit + p * ((row.end ?? 1) - hit) };
+    const total = wind ? sw : sr;
+    return { role: slot.clip, fade: wind ? fade(p * total, total, 'special', false) : fade(p * total, total, 'special'), frac: wind ? s0 + p * (hit - s0) : hit + p * ((row.end ?? 1) - hit) };
   }
   if (f.phase === 'attack') {
     const m = sim.moves[f.move];
@@ -128,14 +135,14 @@ function combatOf(f, view, sim, def, A) {
     let frac = 1;
     for (let i = 1; i < keys.length; i++) if (p <= keys[i][0]) { const [x, y] = keys[i - 1], [x1, y1] = keys[i]; frac = x1 > x ? y + (y1 - y) * (p - x) / (x1 - x) : y1; break; }
     const snap = f.age >= t.windup - W.snapBefore && f.age <= t.windup + W.snapAfter;
-    return { role, fade: fade(p), frac, snap };
+    return { role, fade: fade(f.age, total, 'attack'), frac, snap };
   }
   if (f.phase === 'roll' || f.phase === 'backstep') {
-    const p = Math.min(1, f.age / (f.phase === 'roll' ? sim.rules.roll.ticks : sim.rules.backstep.ticks));
-    const row = def.roles[def.states[f.phase]] || {}, s0 = row.start ?? 0;   // the roll plays start..end of its clip (a roll-to-run's run-out is cut off)
-    // a roll-to-run ends in a run pose: its weight eases out over the clip's last 1/rollFadeOut, so the run-out blends into the stance
-    // instead of snapping (Dom 26 Oct: "suddenly switches to the normal stance")
-    return { role: def.states[f.phase], fade: Math.min(1, p * A.fadeIn, (1 - p) * (A.rollFadeOut ?? A.fadeOut)), frac: s0 + p * ((row.end ?? 1) - s0) };
+    const ticks = f.phase === 'roll' ? sim.rules.roll.ticks : sim.rules.backstep.ticks, p = Math.min(1, f.age / ticks);
+    const row = def.roles[def.states[f.phase]] || {}, s0 = row.start ?? 0;   // the roll plays start..end of its clip
+    // a roll-to-run ends in a run pose: its weight eases out over settleMs.roll, so the run-out blends into the stance instead of
+    // snapping (Dom 26 Oct: "suddenly switches to the normal stance")
+    return { role: def.states[f.phase], fade: fade(f.age, ticks, 'roll'), frac: s0 + p * ((row.end ?? 1) - s0) };
   }
   if (f.phase === 'hurt') {
     if (f.hurtKind === 'parried' || f.hurtKind === 'broken') {
@@ -144,7 +151,7 @@ function combatOf(f, view, sim, def, A) {
       return { role: def.states.parried, fade: 1, frac: A.react.deflectFrom + p * (1 - A.react.deflectFrom), snap: true };
     }
     const p = Math.min(1, f.age / Math.max(1, f.age + f.stun));
-    return { role: def.states.hurt, fade: fade(p), frac: p };
+    return { role: def.states.hurt, fade: fade(f.age, f.age + f.stun, 'hurt'), frac: p };
   }
   if (f.phase === 'ready' || f.phase === 'guard') {
     // a block or a parry just landed on this fighter: its short reaction clip over the guard
@@ -246,7 +253,7 @@ export function drawFighter(view, f, sim, def, dt, frozen, A) {
     if (cm.free && e) { e.a.reset(); e.a.paused = false; e.a.play(); }   // a one-shot that runs by itself (the death clip) starts from its first frame
   }
   view.combatRole = cm ? cm.role : null;
-  const ease = 1 - Math.exp(-step * A.weightRate);
+  const ease = 1 - Math.exp(-step * (3000 / A.blendMs.locomotion));   // blendMs.locomotion = the time an eased weight takes to close ~95% of its gap
   for (const [role, e] of Object.entries(view.actions)) {
     const isCombat = cm && role === cm.role, fadeW = cm ? cm.fade : 0;
     const target = guardMove ? (split[role] ?? (loco[role] || 0) * (1 - fadeW)) : (loco[role] || 0) * (1 - fadeW) + (isCombat ? fadeW : 0);
