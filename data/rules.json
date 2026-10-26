@@ -11,7 +11,6 @@
   "backstep": { "ticks": 12, "speed": 1, "cost": 10, "cancelFrom": 8 },
   "posture": { "max": 100, "decay": 0.2, "hold": 60, "stun": 90, "parry": 25, "perfect": 0.5 },
   "counter": { "damage": 1.25, "stagger": 1.5 },
-  "rear": { "arc": 1.5707963267948966, "damage": 1.25, "stagger": 1.25, "posture": 1.5 },
   "stopHit": { "damage": 1.5, "stagger": 1.75, "whiff": 10, "walk": 0.3 },
   "charge": { "min": 30, "max": 54, "damage": 1.5, "stagger": 1.5 },
   "buffer": { "window": 10, "ttl": 11 },
@@ -22,5 +21,12 @@
   "cleanDrain": { "kick": 15 },
   "exhaustedHitStun": 36,
   "move": { "walk": 3, "run": 5.2, "knockbackSpeed": 3 },
-  "body": { "spacing": 0.85, "arenaRadius": 8, "spawnGap": 3.25 }
+  "body": { "spacing": 0.85, "arenaRadius": 8, "spawnGap": 3.25 },
+  "bands": { "about": "V1 positioning bands (band-defs.json, fixed edges: Dom's sandbox numbers; live via bandsFlag). A blow's damage and knockback are scaled by `off` unless the gap AT THE START of the swing falls in the weapon's best band: inner < innerEdge <= mid < midEdge <= outer. Longsword best = mid.", "innerEdge": 1.35, "midEdge": 1.8, "off": 0.4, "best": "mid" },
+  "flank": { "about": "sandbox flank: a blow from the side on a raised guard (not facing it, not the rear)", "damage": 1.2, "posture": 1.4 },
+  "rear": { "arc": 1.5707963267948966, "damage": 1.25, "stagger": 1.25, "posture": 1.5, "downed": 1.5 },
+  "wall": { "edge": 0.25, "stagger": 12, "posture": 15, "band": 1 },
+  "wound": { "ticks": 240, "regen": 0.8, "staminaCap": 8, "capFloor": 40, "legSpeed": 0.85 },
+  "bloodied": { "below": 0.3, "postureDecay": 0.5 },
+  "retreat": { "away": 0.02 }
 }
