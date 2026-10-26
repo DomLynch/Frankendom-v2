@@ -35,7 +35,7 @@ export async function loadBody(def, slot, set = def.bodySet) {
 
 // the library sword (data/clips.json sword): a group whose origin is the hand, +Y toward the tip
 export async function loadSword(def) {
-  const g = await once(def.base + def.sword.file);
+  const g = await once(def.sword.file.startsWith('./') ? def.sword.file : def.base + def.sword.file);
   const model = g.scene.clone(true);
   model.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
   const box = new THREE.Box3().setFromObject(model);

@@ -56,6 +56,12 @@ export function attachBody(view, body, clips, def, swordModel) {
     grip.holder.add(sword);
     view.sword = sword;
   }
+  // the soles: each foot and toe bone and its height above the floor in the bind pose (the body stands on y = 0 here)
+  view.root.position.y = 0;
+  body.updateMatrixWorld(true);
+  view.soles = ['LeftFoot', 'RightFoot', 'LeftToeBase', 'RightToeBase'].map((n) => body.getObjectByName('mixamorig' + n)).filter(Boolean)
+    .map((b) => [b, b.getWorldPosition(new THREE.Vector3()).y]);
+  view.lift = 0;
   view.spine = body.getObjectByName('mixamorigSpine1') || null;
   if (def.guardTilt) {
     const B = def.guardTilt.bones;
@@ -152,6 +158,21 @@ function gaitWeights(speed, knots) {
 }
 const smoothstep = (x, a, b) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
+// The clips are fitted by hip height only, so a deep step or a lunge can drop a foot through the floor. Each frame the lowest sole
+// (a foot or toe bone against its own height in the bind pose) lifts the whole body just enough to stand on the ground: up only,
+// eased, never more than `maxLift`. A body in the air (a roll) is left alone.
+const _p = new THREE.Vector3();
+function keepOnGround(view, step, A) {
+  if (!view.soles) return;
+  view.root.position.y = 0;
+  view.body.updateMatrixWorld(true);
+  let gap = Infinity;
+  for (const [bone, base] of view.soles) gap = Math.min(gap, bone.getWorldPosition(_p).y - base);
+  const want = Math.min(A.ground.maxLift, Math.max(0, -gap));
+  view.lift += (want - view.lift) * (1 - Math.exp(-step * A.ground.rate));
+  view.root.position.y = view.lift;
+}
+
 // a block, a parry or a guard break landed on this view's fighter: the reaction clip plays over the next few ticks
 export function reactTo(view, pose) { view.react = { pose, age: 0 }; }
 
@@ -211,11 +232,13 @@ export function drawFighter(view, f, sim, def, dt, frozen, A) {
     const target = (loco[role] || 0) * (1 - fadeW) + (isCombat ? fadeW : 0);
     if (!view.primed) view.w[role] = target;
     else view.w[role] = cm && cm.snap ? (isCombat ? 1 : 0) : view.w[role] + (target - view.w[role]) * ease;
+    if (view.w[role] < A.weightFloor && target === 0) view.w[role] = 0;   // an eased weight never reaches 0 by itself: a clip left at 1e-9 would still be evaluated every frame
     e.a.setEffectiveWeight(view.w[role]);
     if (isCombat && cm.frac != null) { e.a.paused = true; e.a.time = Math.min(e.dur, cm.frac * e.dur); }
   }
   view.primed = true;
   view.mixer.update(step);
+  keepOnGround(view, step, A);
 
   // the guard side, V1's way: one Guard clip plus a per-side tilt of the torso, chest and sword arm, eased in and out
   if (def.guardTilt) {

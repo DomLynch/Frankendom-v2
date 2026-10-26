@@ -17,7 +17,11 @@ const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specia
   ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials', 'feel', 'sound', 'blood', 'blades', 'anim'].map(get),
 );
 const params = new URLSearchParams(location.search);
-const hitScale = params.has('hitstop') ? Number(params.get('hitstop')) : hitStop.scale;
+// ?sword=plain|crafted|ornate (Frankendom's own longswords) or half (the library's Half Sword long sword) picks the blade to try
+const swordPick = params.get('sword');
+if (swordPick === 'half') Object.assign(clips.sword, { file: 'assets/weapon-011.glb', grip: 0.09, guard: 0, tip: 0.75 });
+else if (['plain', 'crafted', 'ornate'].includes(swordPick)) clips.sword.file = `./assets/weapons/longsword-${swordPick}.glb`;
+const hitScale =params.has('hitstop') ? Number(params.get('hitstop')) : hitStop.scale;
 const brainRow = behaviours.brains.find((b) => b.id === (params.get('brain') || 'easy'));
 const aiOff = params.get('ai') === 'off';   // off switch: the opponent stands still
 fetch('./build.txt?v=' + Date.now(), { cache: 'no-store' }).then((r) => (r.ok ? r.text() : '')).then((t) => { document.getElementById('build').textContent = t.slice(0, 7); }).catch(() => {});
