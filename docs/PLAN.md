@@ -1,6 +1,29 @@
 # Frankendom V2: build plan
 
-## HANDOFF (2026-10-25 night, Dom stopped work for a handover)
+## HANDOFF (2026-10-26 morning, Dom is clearing the session; Frankendom V2 Dev on Sonnet 5.5)
+
+**Live:** https://v2.frankendom.com at 6d6b1fe (main). No open PRs, no WIP. Player = Girlscout (T Masuyama), opponent = Kachujin (G Rosales), OpenTrident's Mixamo bodies on the 106 rig (`models/custom/*-full-phone-mixamorig.glb`); `?body=makehuman` for the old pair. The one-mold rule is unchanged.
+
+**Dom's reference is the live ORIGINS zone page** (Lead Dev confirmed at 82a994d15: the page walks the hero, the duel sim judges presses, guard, hits and the foe). Not the arena duel (`src/main.ts`). Read the verified V1-vs-V2 table: `~/Library/Application Support/Claude/side-session-notes/local_61f070fb-5c91-4727-8d7a-ef2f7e296dc2/v1-vs-v2-combat-recce.md`.
+
+**Merged this session (PR numbers on GitHub):**
+- #33 V1's longsword model; #35 Girlscout vs Kachujin; #34 build label never cached.
+- #36 combat fidelity: V1's baked blade sweep (`data/blades.json`), positioning bands (0.4x off 1.35-1.8 m, `rules.bands`), 0.85 m ring, wounds (stamina cap, leg slow), flank, rear.downed, stop-hit `advancing`, perfect-block ticks, parry-window exposure, guard-break charged mults, wall slam and backstep refusal.
+- #37/#40 input and walk: Origins walk (`rules.move`: walk 2.7 (Dom's pick, V1 is 2.3), strafe x0.7, back x0.6, run 5.2, rooted only in wind-up/active, no guard slow, heading pulled to the foe at 6/s, sprint free), backstep press = roll, lights always alternate, stick as `sf`/`ss`.
+- #38 animation like V1 (`data/anim.json`): no crossfades, eased clip weights, gait blend, strafe/back clips, swing scrub keys, block/parry/deflect reaction poses; #39 wall whip + render interpolation; #42 audit fixes; #43 V1 opponent AI (`src/sim/brain.js`, rows in `data/behaviours.json`, `scripts/ai-bout.mjs`).
+- #44 feel fixes: V1's own longswords (`assets/weapons/longsword-{plain,crafted,ornate}.glb`, ornate default, `?sword=plain|crafted|half`), camera orbit 0, feet kept on the ground (`keepOnGround`), idle clips drop out of the mixer.
+- #45 upright Ready Idle (104210901), placeholder `Layer_*` meshes hidden (`?layers=1` shows them), walk 2.7; #46 strafe uses the Strafe Walk clips (1.95 m/s).
+
+**Queue (PM round 22, all accepted, nothing started):**
+1. Visual proof for #42 and #43: add one 375 mid-fight still to each PR body (`gh pr edit`), or one line saying why not. A mid-fight still for #42 already exists: `docs/stills/fidelity-midfight-375.png`; make one for #43 with the stills script.
+2. SOURCES rows: one row per body and clip family (source URL, licence, retrieved date) for what the page loads from opentrident.org (Girlscout, Kachujin, MakeHuman pair, `mixamo/clips/`, `mixamo/clips/gladio/`, `mixamo/clips/hs/`, the library sword, the Frankendom longswords, the Half Sword weapon), plus a test that fails when a file `data/clips.json` loads has no row. Be honest on licences: Mixamo = Adobe terms; the gladio and hs clips are retargeted from games (Gladio and Glory, Half Sword) and are NOT confirmed to be redistributable: mark `unconfirmed` and tell Dom/Strategy, do not invent a licence.
+3. Feel layer A1: per-transition blend rows in ms in `data/anim.json` (idle to attack 60-90, attack to recovery 80, hit 40, locomotion 120; none above 150), replacing fadeIn/fadeOut/weightRate (the PM misread fadeIn 12 as ticks; it is a fraction of the move); validator keys, a test that no row exceeds 150, a before/after 375 swing still. Then A2-A6 of `frankendom-strategy/docs/FRANKENDOM-V2-FEEL-LAYER-2026-10-25.md`, and the V1 HUD labels, and hit readability beyond the reaction poses.
+
+**Open / not verified:** nothing has been judged on Dom's phone since 6d6b1fe. The forward walk clip plays 1.6x at 2.7 m/s; if Dom finds it hurried, blend toward a jog (no armed walk near 2.7 m/s exists; OpenTrident Dev checked). Not ported: wound scars, a special's windup freezing the caster (Pit rule), creature-only rules (poise ladder, many-on-one). Dom may send clip ids for kick/stab/slash from the OpenTrident clip panel. Timer off-by-one vs V1 (suspected, one tick) left alone.
+
+**How to work here:** tests run on the VPS (hooks keep `node --test` and Bash file edits off the Mac): `COPYFILE_DISABLE=1 tar --no-xattrs --exclude=.git --exclude=.serena --exclude='*.mp4' --exclude='*.png' -czf - . | ssh -i ~/.ssh/binance_futures_tool root@49.12.7.18 'rm -rf /root/f2v-dev-run && mkdir -p /root/f2v-dev-run && tar xzf - -C /root/f2v-dev-run && cd /root/f2v-dev-run && npm test'`. Stills: headless Chromium via playwright from `~/Developer/frankendom-deploy/node_modules`, route opentrident.org to add CORS. Merge only on `gh pr checks` = `test pass`. The armour lint bans any data key named block/blocks/immune. Idle peer sessions do not answer SendMessage; decide from V1 source (`git -C ~/Developer/frankendom-combat show origin/HEAD:<path>`).
+
+## Earlier handoff (2026-10-25 night, Dom stopped work for a handover)
 
 **Live build:** https://v2.frankendom.com at **0ecd2d7**.
 - Every green main deploys itself and is checked against `build.txt`.
