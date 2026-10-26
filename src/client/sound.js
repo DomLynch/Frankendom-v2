@@ -26,9 +26,12 @@ export function createSound(def, specials, base = './') {
     return null;
   }
 
-  function start() {
-    // iOS also parks the context in 'interrupted' after a call, Siri or an app switch: resume from any non-running state
-    if (ctx) { if (ctx.state !== 'running') ctx.resume().catch(() => {}); return; }
+  // The context is built at page load (allowed without a touch; it starts 'suspended') and the sprite is decoded at once, so the
+  // first touch only has to resume it. Building it inside the first touch left the whole decode (a 46 s sprite, seconds on a
+  // phone) after the gesture, and every cue in that window was dropped: the sound "came on halfway through the fight".
+  let decoding = false;
+  function build() {
+    if (ctx) return;
     ctx = new (window.AudioContext || window.webkitAudioContext)();
     // iOS mutes "ambient" web audio under the ringer switch; a playback session plays like a game does (Safari 17+, V1 feedback.ts:75)
     if (navigator.audioSession) try { navigator.audioSession.type = 'playback'; } catch { /* older WebKit */ }
@@ -48,9 +51,19 @@ export function createSound(def, specials, base = './') {
     }
     room.buffer = ir;
     room.connect(master);
-    decode().then((b) => { buffer = b; if (!b) console.warn('sound: no sprite format decoded'); });
+    loadSprite();
+  }
+  function loadSprite() {
+    if (buffer || decoding) return;
+    decoding = true;
+    decode().then((b) => { buffer = b; decoding = false; if (!b) console.warn('sound: no sprite format decoded'); }).catch(() => { decoding = false; });
+  }
+  // a touch (or a key): resume the context, which iOS also parks in 'interrupted' after a call, Siri or an app switch, and play the
+  // classic one-sample unlock inside the gesture
+  function start() {
+    try { build(); } catch { return; }
+    loadSprite();   // a decode that failed at load is tried again here
     if (ctx.state !== 'running') ctx.resume().catch(() => {});
-    // the classic unlock: a one-sample buffer started inside the gesture
     try { const s = ctx.createBufferSource(); s.buffer = ctx.createBuffer(1, 1, 22050); s.connect(ctx.destination); s.start(0); } catch { /* not fatal */ }
   }
   // iOS plays Web Audio under the silent switch unless the page is also playing a media element: a looping silent clip puts the
@@ -70,10 +83,17 @@ export function createSound(def, specials, base = './') {
   }
   const wake = () => { keepAwake(); start(); };
   for (const type of ['touchend', 'pointerup', 'click', 'keydown']) addEventListener(type, wake, { passive: true });
+  // coming back to the page (app switch, a call, the lock screen) leaves the context suspended or interrupted: ask for it again, which
+  // iOS grants as soon as it allows, and the next touch asks too
+  const rewake = () => { if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {}); };
+  addEventListener('pageshow', rewake);
+  addEventListener('focus', rewake);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) rewake(); });
+  try { build(); } catch { /* no Web Audio here: the first touch tries again */ }   // at load: the decode starts now, not at the first touch
 
   let played = 0;
   function play(c) {
-    if (!buffer) return;
+    if (!buffer || ctx.state !== 'running') return;   // a suspended context's clock is frozen: its cues would all fire in a burst on resume
     played++;
     const variants = def.sprite[c.cue];
     if (!variants) return;
@@ -126,7 +146,7 @@ export function createSound(def, specials, base = './') {
     status: () => (ctx ? `${ctx.state}${buffer ? '+sprite' : '-nosprite'}${keep && !keep.paused ? '+keep' : ''} ${played}` : 'no-touch-yet'),
     // one sim tick's events, plus the phase changes the sim doesn't emit (roll, backstep, whiff)
     onTick(events, sim) {
-      if (!ctx || !buffer) return;
+      if (!ctx || !buffer || ctx.state !== 'running') return;
       const keys = [];
       const kill = events.some((e) => e.t === 'Killed');
       for (const e of events) {

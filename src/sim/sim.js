@@ -353,7 +353,10 @@ function advance(f, foe, intent, moves, R) {
       bump(f);
     }
     if (f.age < t.windup && m.id !== 'kick') f.heading = turnToward(f.heading, angleTo(f, foe), R.turn.windup);
-    if (f.age > R.stepInFrom && f.age < t.windup && !parks) stepTo(Math.sin(f.heading) * m.stepIn, Math.cos(f.heading) * m.stepIn, pace);
+    // the step-in covers V1's distance whatever the wind-up's length: a longer clip-length wind-up steps proportionally slower instead of
+    // gliding further (the clip-set stab slid 1.4 m, V1's is 0.75 m) while the body's feet barely move
+    const v1w = (f.chained && m.v1?.chained ? m.v1.chained.windup : m.v1?.windup) ?? t.windup, stepK = (v1w - R.stepInFrom) / Math.max(1, t.windup - R.stepInFrom);
+    if (f.age > R.stepInFrom && f.age < t.windup && !parks) stepTo(Math.sin(f.heading) * m.stepIn * stepK, Math.cos(f.heading) * m.stepIn * stepK, pace);
     if (f.age >= t.windup + t.active + t.recovery) {
       if (!f.chained && m.chain) { f.chainWindow = m.chain.window; f.chainFrom = m.id; }
       enter(f, 'ready');
