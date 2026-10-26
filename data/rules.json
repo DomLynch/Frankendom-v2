@@ -3,7 +3,7 @@
   "tickHz": 60,
   "health": 150,
   "death": 144,
-  "stamina": { "max": 100, "regen": 0.6666666666666666, "regenDelay": 45, "guardRegen": 0.5, "sprintCost": 0.2, "exhaustRecover": 20, "exhaustedStun": 36, "exhaustedSpeed": 0.7 },
+  "stamina": { "max": 100, "regen": 0.6666666666666666, "regenDelay": 45, "guardRegen": 0.5, "sprintCost": 0, "exhaustRecover": 20, "exhaustedStun": 36, "exhaustedSpeed": 0.7 },
   "guard": { "arc": 1.0471975511965976, "speed": 0.35, "blockCost": 25, "breakCost": 60, "perfectBlock": 3, "perfectBlockCost": 0.5, "counterWindow": 20 },
   "parry": { "window": 10, "cooldown": 30, "stun": 90, "recovery": 8 },
   "feint": { "cost": 10, "beat": 10 },
@@ -20,7 +20,11 @@
   "hitArc": 1.0471975511965976,
   "cleanDrain": { "kick": 15 },
   "exhaustedHitStun": 36,
-  "move": { "walk": 3, "run": 5.2, "knockbackSpeed": 3 },
+  "move": {
+    "about": "The Origins page walks the hero (RPG-game trunk origins/preview/main.ts:434-463, Lead-confirmed 26 Oct: Dom compares the live Origins zone page), not the duel sim. The stick splits into forward (back capped at `back`) and strafe (x `strafe`), both doubled when running, at `walk` m/s, or `run` m/s doubled-halved when running; the heading is pulled to the foe at `turnPull`/s (lockPull), never snapped. He is rooted only in a swing's wind-up and active ticks: walking is free in recovery, stagger and guard (no guard slow, no exhaustion slow). `pace` is the duel sim's own speed for a lunge and a backstep; `knockbackSpeed` for a shove.",
+    "walk": 2.3, "run": 5.2, "strafe": 0.7, "back": 0.6, "turnPull": 6, "pace": 3, "knockbackSpeed": 3,
+    "recoveryWalk": true, "staggerWalk": true
+  },
   "body": { "spacing": 0.85, "arenaRadius": 8, "spawnGap": 3.25 },
   "bands": { "about": "V1 positioning bands (band-defs.json, fixed edges: Dom's sandbox numbers; live via bandsFlag). A blow's damage and knockback are scaled by `off` unless the gap AT THE START of the swing falls in the weapon's best band: inner < innerEdge <= mid < midEdge <= outer. Longsword best = mid.", "innerEdge": 1.35, "midEdge": 1.8, "off": 0.4, "best": "mid" },
   "flank": { "about": "sandbox flank: a blow from the side on a raised guard (not facing it, not the rear)", "damage": 1.2, "posture": 1.4 },

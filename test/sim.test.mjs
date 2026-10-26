@@ -122,6 +122,37 @@ test('a light out of a backstep takes the chained timing', () => {
   assert.equal(a.chained, true);
 });
 
+// V1 origins/preview/main.ts:434-463 (the page walks the hero): 2.3 m/s forward, back at most 0.6 of it, strafe x0.7, run 5.2
+test('the walk: 2.3 m/s at the foe, 0.6 of that backing off, 0.7 of it strafing, 5.2 running', () => {
+  const dist = (stick, ticks = 30, run = false) => {
+    const sim = duel(8);
+    const a = sim.state.fighters[0];
+    a.x = 0; a.z = -4; a.heading = 0;
+    const b = sim.state.fighters[1]; b.x = 0; b.z = 4; b.heading = Math.PI;
+    for (let i = 0; i < ticks; i++) sim.step([{ ...stick, run }, idle]);
+    return Math.hypot(a.x, a.z + 4);
+  };
+  const near = (x, y) => assert.ok(Math.abs(x - y) < 0.05, `${x} vs ${y}`);
+  near(dist({ sf: 1, ss: 0 }), 2.3 / 2);
+  near(dist({ sf: -1, ss: 0 }), 2.3 * 0.6 / 2);
+  near(dist({ sf: 0, ss: 1 }), 2.3 * 0.7 / 2);
+  near(dist({ sf: 1, ss: 0 }, 30, true), 5.2 / 2);
+});
+
+test('he is rooted through a swing\'s wind-up and active ticks, and walks again in recovery', () => {
+  const sim = duel(6);
+  const a = sim.state.fighters[0];
+  a.x = 0; a.z = -3; a.heading = 0;
+  const b = sim.state.fighters[1]; b.x = 6; b.z = 6; b.heading = 0;   // out of the way
+  sim.step([{ press: 'light', sf: -1, ss: 0 }, idle]);
+  const z0 = a.z;
+  for (let i = 0; i < 24; i++) sim.step([{ sf: -1, ss: 0 }, idle]);          // wind-up 20 + active 5 = 25 ticks
+  assert.ok(a.z > z0 - 0.05, 'rooted (a swing even lunges forward)');
+  const zr = a.z;
+  for (let i = 0; i < 8; i++) sim.step([{ sf: -1, ss: 0 }, idle]);            // recovery: free
+  assert.ok(a.phase === 'attack' && zr - a.z > 0.1, `walked back in recovery: ${zr - a.z}`);
+});
+
 test('a fighter cannot walk through the other: the 0.85 m ring holds', () => {
   const sim = duel(1.2);
   const [a, b] = sim.state.fighters;
