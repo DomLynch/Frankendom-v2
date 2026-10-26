@@ -25,7 +25,9 @@
   "bands": { "about": "V1 positioning bands (band-defs.json, fixed edges: Dom's sandbox numbers; live via bandsFlag). A blow's damage and knockback are scaled by `off` unless the gap AT THE START of the swing falls in the weapon's best band: inner < innerEdge <= mid < midEdge <= outer. Longsword best = mid.", "innerEdge": 1.35, "midEdge": 1.8, "off": 0.4, "best": "mid" },
   "flank": { "about": "sandbox flank: a blow from the side on a raised guard (not facing it, not the rear)", "damage": 1.2, "posture": 1.4 },
   "rear": { "arc": 1.5707963267948966, "damage": 1.25, "stagger": 1.25, "posture": 1.5, "downed": 1.5 },
-  "wall": { "edge": 0.25, "stagger": 12, "posture": 15, "band": 1 },
+  "wall": { "edge": 0.25, "stagger": 12, "posture": 15, "band": 1,
+    "loiter": { "about": "the lorarii (V1 rules-defs wall.loiter): idle within `band` of the wall for `ticks` without attacking and the whip falls: chip (never the last point), posture, a shove toward the foe or the centre; again every `again` ticks while he stays. WhipRaised is the tell, `raise` (or `raiseAgain`) ticks before.",
+      "ticks": 180, "again": 60, "chip": 3, "posture": 15, "shove": 0.6, "into": 2, "raise": 60, "raiseAgain": 30 } },
   "wound": { "ticks": 240, "regen": 0.8, "staminaCap": 8, "capFloor": 40, "legSpeed": 0.85 },
   "bloodied": { "below": 0.3, "postureDecay": 0.5 },
   "retreat": { "away": 0.02 }

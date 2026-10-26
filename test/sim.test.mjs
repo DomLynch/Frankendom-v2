@@ -99,6 +99,20 @@ test('a backstep with the wall behind is refused and costs nothing', () => {
   assert.equal(a.phase, 'ready');
 });
 
+test('camping on the wall is whipped after 180 ticks: chip, posture, a shove', () => {
+  const sim = duel(3);
+  const [a, b] = sim.state.fighters;
+  a.x = 0; a.z = -7.6; a.heading = 0;
+  b.x = 0; b.z = 0; b.heading = Math.PI;
+  const ev = run(sim, 181);
+  assert.ok(ev.some((e) => e.t === 'WhipRaised' && e.f === 0), 'the whip is raised first');
+  const w = ev.find((e) => e.t === 'Whipped' && e.f === 0);
+  assert.ok(w, JSON.stringify(ev.map((e) => e.t)));
+  assert.equal(a.hp, 150 - 3);
+  assert.ok(a.posture >= 14);
+  assert.ok(Math.hypot(a.x, a.z) < 7.6, 'shoved in from the wall');
+});
+
 test('a light out of a backstep takes the chained timing', () => {
   const sim = duel(3);
   const a = sim.state.fighters[0];
