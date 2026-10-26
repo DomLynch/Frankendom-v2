@@ -1,0 +1,33 @@
+// usage: node walk-stills.mjs <repoDir> <outPrefix> [query]  -- stills while walking forward, back, left, right and diagonally (keyboard stick), foe frozen
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import { createRequire } from 'node:module';
+const require = createRequire('/Users/domininclynch/Developer/frankendom-deploy/');
+const { chromium } = require('playwright');
+const [repo, out, query = ''] = process.argv.slice(2);
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json', '.ogg': 'audio/ogg', '.png': 'image/png', '.webp': 'image/webp' };
+const srv = http.createServer((q, r) => {
+  let p = path.join(repo, decodeURIComponent(q.url.split('?')[0]));
+  if (p.endsWith('/')) p += 'index.html';
+  fs.readFile(p, (e, d) => { if (e) { r.writeHead(404); r.end(); } else { r.writeHead(200, { 'content-type': types[path.extname(p)] || 'application/octet-stream' }); r.end(d); } });
+}).listen(0);
+const port = srv.address().port;
+const exe = process.env.HOME + '/Library/Caches/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-mac-arm64/chrome-headless-shell';
+const b = await chromium.launch({ executablePath: fs.existsSync(exe) ? exe : undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const pg = await b.newPage({ viewport: { width: 375, height: 667 }, deviceScaleFactor: 2 });
+await pg.route(/opentrident\.org/, async (route) => {
+  try { const res = await route.fetch(); await route.fulfill({ response: res, headers: { ...res.headers(), 'access-control-allow-origin': '*' } }); } catch { /* closing */ }
+});
+await pg.goto(`http://localhost:${port}/?ai=off&seed=3&${query}`);
+await pg.waitForTimeout(14000);
+for (const [name, keys] of [['fwd', ['KeyW']], ['back', ['KeyS']], ['left', ['KeyA']], ['right', ['KeyD']], ['backleft', ['KeyS', 'KeyA']]]) {
+  for (const k of keys) await pg.keyboard.down(k);
+  await pg.waitForTimeout(900);
+  await pg.screenshot({ path: `${out}-${name}-a.png` });
+  await pg.waitForTimeout(260);
+  await pg.screenshot({ path: `${out}-${name}-b.png` });
+  for (const k of keys) await pg.keyboard.up(k);
+  await pg.waitForTimeout(1200);
+}
+await b.close(); srv.close();
