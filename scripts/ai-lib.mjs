@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { createSim } from '../src/sim/sim.js';
 import { createBrain, think } from '../src/sim/brain.js';
+import { applyTimingSet } from '../src/sim/timing.js';
 
 const load = (f) => JSON.parse(readFileSync(new URL(`../data/${f}.json`, import.meta.url), 'utf8'));
 export const data = { rules: load('rules'), moves: load('move-defs'), behaviours: load('behaviours'), specials: load('specials'), blades: load('blades') };
@@ -25,8 +26,8 @@ export const dummies = {
 };
 
 // a player is { brain: rowId, with?: row overrides } or { dummy: name }; returns the events, the final state and the brains
-export function bout(a, b, seed, ticks = 60 * 120, tweak) {
-  const sim = createSim(data, seed);
+export function bout(a, b, seed, ticks = 60 * 120, tweak, timing = 'v1') {
+  const sim = createSim(applyTimingSet(data, load('timing-sets'), timing), seed);
   if (tweak) tweak(sim);
   const players = [a, b].map((p, i) => p.brain
     ? {

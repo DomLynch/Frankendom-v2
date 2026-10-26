@@ -19,11 +19,12 @@ const matches = [
   [{ brain: 'hard' }, { dummy: 'roller' }],
 ];
 const name = (p) => p.brain || p.dummy;
-console.log(`${N} seeded bouts each, ${TICKS} ticks max (60 Hz). Wins are for the left side.`);
+const SET = process.argv[4] || 'v1';   // the timing set (data/timing-sets.json): v1 | clip
+console.log(`${N} seeded bouts each, ${TICKS} ticks max (60 Hz), timing set ${SET}. Wins are for the left side.`);
 for (const [a, b] of matches) {
   let w = 0, l = 0, d = 0, len = 0, swings = 0, kicks = 0;
   for (let seed = 1; seed <= N; seed++) {
-    const r = bout(a, b, seed, TICKS);
+    const r = bout(a, b, seed, TICKS, undefined, SET);
     if (r.winner === 0) w++; else if (r.winner === 1) l++; else d++;
     len += r.state.tick;
     for (const [, e] of r.log) if (e.t === 'Swing' && e.f === 0) { swings++; if (e.move === 'kick') kicks++; }

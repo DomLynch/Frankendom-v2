@@ -43,7 +43,8 @@ export const SCHEMA = {
       'pushback', 'pushbackMax', 'react', 'staggerFloor', 'slots', 'pick', 'sounds'],
     rows: { slots: ['press', 'skill', 'move', 'name', 'clip'], pick: ['skill', 'move', 'name', 'clip'] },
   },
-  'stage': { keys: ['source', 'sky', 'fog', 'ground', 'grid', 'ruler', 'light'] },
+  'timing-sets': { keys: ['about', 'default', 'derive', 'sets'] },
+  'stage': { keys:['source', 'sky', 'fog', 'ground', 'grid', 'ruler', 'light'] },
 };
 
 const BANNED = /^(block|blocks|immune|immunity)$/i;

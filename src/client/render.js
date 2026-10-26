@@ -112,7 +112,7 @@ function combatOf(f, view, sim, def, A) {
     return [row, hit, s0, p];
   };
   if (slot && (f.special > 0 || (f.specialRecover > 0 && f.phase === 'ready'))) {
-    const wind = f.special > 0, p = wind ? 1 - Math.min(f.special, S.windup) / S.windup : 1 - f.specialRecover / S.recovery;
+    const wind = f.special > 0, sw = slot.windup ?? S.windup, p = wind ? 1 - Math.min(f.special, sw) / sw : 1 - f.specialRecover / (slot.recovery ?? S.recovery);
     const [row, hit, s0] = scrub(slot.clip, p);
     return { role: slot.clip, fade: wind ? fade(p, false) : fade(p), frac: wind ? s0 + p * (hit - s0) : hit + p * ((row.end ?? 1) - hit) };
   }

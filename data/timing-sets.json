@@ -1,0 +1,82 @@
+{
+  "about": "Two timing sets for the same moves (Strategy 2026-10-26, Dom's A/B). 'v1' is V1's tick table, untouched (data/move-defs.json, data/specials.json, rules.roll). 'clip' lasts as long as each Mixamo clip does: windup = (hit - start) x dur, recovery = (end - hit) x dur - active, from data/clips.json; run scripts/derive-timings.mjs --write after changing a clip row. Chained lights keep V1's chained/base ratio; a roll's i-frames scale with its length and its speed shrinks so the distance stays V1's. Heavy, kick, the riposte rows and the other skills keep V1's windows until Dom picks their clips. ?timing=v1 or ?timing=clip picks the set; `default` is used otherwise.",
+  "default": "clip",
+  "derive": {
+    "moves": {
+      "light_right": "Attack",
+      "light_left": "Return",
+      "thrust": "Thrust"
+    },
+    "specials": {
+      "cleave": "SkullCrack",
+      "reaping": "Whirlwind",
+      "stomp": "GroundSlam",
+      "lunge": "Lunge"
+    },
+    "roll": "Roll"
+  },
+  "sets": {
+    "v1": {},
+    "clip": {
+      "swing": {
+        "windupKey": 1,
+        "windupValue": 1,
+        "followKey": 1,
+        "followValue": 1,
+        "snapBefore": 1,
+        "snapAfter": 4
+      },
+      "moves": {
+        "light_right": {
+          "windup": 26,
+          "active": 5,
+          "recovery": 39,
+          "chained": {
+            "windup": 21,
+            "active": 5,
+            "recovery": 31
+          }
+        },
+        "light_left": {
+          "windup": 26,
+          "active": 5,
+          "recovery": 39,
+          "chained": {
+            "windup": 21,
+            "active": 5,
+            "recovery": 31
+          }
+        },
+        "thrust": {
+          "windup": 52,
+          "active": 6,
+          "recovery": 57
+        }
+      },
+      "specials": {
+        "cleave": {
+          "windup": 40,
+          "recovery": 86
+        },
+        "reaping": {
+          "windup": 40,
+          "recovery": 125
+        },
+        "stomp": {
+          "windup": 61,
+          "recovery": 119
+        },
+        "lunge": {
+          "windup": 19,
+          "recovery": 105
+        }
+      },
+      "roll": {
+        "ticks": 84,
+        "iframeStart": 9,
+        "iframeEnd": 47,
+        "speedMul": 0.429
+      }
+    }
+  }
+}
