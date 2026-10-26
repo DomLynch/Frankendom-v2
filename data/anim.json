@@ -8,7 +8,7 @@
   "stepMax": 0.1,
   "fadeIn": 12,
   "fadeOut": 10,
-  "gait": { "knots": [0, 1.7, 3, 5.2], "runFrom": 3.2, "runTo": 4, "walkRateMin": 0.25, "runRateMin": 0.5, "stopBelow": 0.015 },
+  "gait": { "knots": [0, 1.7, 3, 5.2], "runFrom": 3.2, "runTo": 4, "strafeFrom": 0.35, "strafeTo": 0.85, "walkRateMin": 0.25, "runRateMin": 0.5, "stopBelow": 0.015 },
   "swing": { "windupKey": 0.7, "windupValue": 0.44, "followKey": 0.16, "followValue": 0.56, "snapBefore": 1, "snapAfter": 4 },
   "react": { "blocked": 12, "parried": 18, "deflected": 36, "deflectFrom": 0.35 }
 }

@@ -214,7 +214,7 @@ export function drawFighter(view, f, sim, def, dt, frozen, A) {
 
   // locomotion weights (V1 characters.ts:832-837, armed): idle <-> movement by speed; movement = walk / strafe / run
   const G = A.gait, gait = gaitWeights(view.speed, G.knots), movement = 1 - gait[0];
-  const side = Math.min(1, Math.abs(lateral)), run = smoothstep(view.speed, G.runFrom, G.runTo);
+  const side = smoothstep(Math.abs(lateral), G.strafeFrom, G.strafeTo), run =smoothstep(view.speed, G.runFrom, G.runTo);
   const loco = {
     [def.states.idle]: gait[0],
     [def.states.walk]: movement * (1 - side) * (1 - run),
