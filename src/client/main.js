@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { createStage } from './stage.js';
 import { lockPageZoom, viewW, viewH } from './zoom-guard.js';
 import { createInput } from './input.js';
-import { createFighterView, attachBody, drawFighter } from './render.js';
+import { createFighterView, attachBody, drawFighter, reactTo } from './render.js';
 import { createFx } from './fx.js';
 import { createSound } from './sound.js';
 import { createBlood } from './blood.js';
@@ -13,8 +13,8 @@ import { createSim } from '../sim/sim.js';
 import { createBrain, think } from '../sim/brain.js';
 
 const get = (f) => fetch(`./data/${f}.json`, { cache: 'no-cache' }).then((r) => r.json());
-const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specials, feelDef, soundDef, bloodDef, blades] = await Promise.all(
-  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials', 'feel', 'sound', 'blood', 'blades'].map(get),
+const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specials, feelDef, soundDef, bloodDef, blades, anim] = await Promise.all(
+  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials', 'feel', 'sound', 'blood', 'blades', 'anim'].map(get),
 );
 const params = new URLSearchParams(location.search);
 const hitScale = params.has('hitstop') ? Number(params.get('hitstop')) : hitStop.scale;
@@ -133,6 +133,7 @@ function frame(t) {
       const yaw = Math.atan2(me.x - foe.x, me.z - foe.z);
       const events = sim.step([input.sample(yaw, me), aiOff ? {} : think(brain, sim, 1)]);
       fx.onEvents(events, sim);
+      for (const e of events) if (e.t === 'Blocked' || e.t === 'Parried') reactTo(views[e.d], e.t === 'Blocked' ? 'blocked' : 'parried');
       blood.onEvents(events, sim);
       sound.onTick(events, sim);
       const killed = events.find((e) => e.t === 'Killed');
@@ -153,7 +154,7 @@ function frame(t) {
   const feel = fx.update(dt, sim);
   blood.update(dt);
   sim.state.fighters.forEach((f, i) => {
-    drawFighter(views[i], f, sim, clips, dt, frozen);
+    drawFighter(views[i], f, sim, clips, dt, frozen, anim);
     fx.applyPose(views[i], i, f);
     fx.trail(views[i], f, sim);
     bar('hp' + i, (f.hp / rules.health) * 100);

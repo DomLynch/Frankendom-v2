@@ -12,6 +12,7 @@ const BRAIN_KEYS = ['id', 'reaction', 'accuracy', 'parry', 'dodge', 'aggression'
 
 // file -> { keys: top-level keys, rows: { arrayKey: row keys } }
 export const SCHEMA = {
+  'anim': { keys: ['about', 'weightRate', 'speedRate', 'tiltRate', 'stepMax', 'fadeIn', 'fadeOut', 'gait', 'swing', 'react'] },
   'blood': { keys: ['about', 'spray', 'floor'] },
   'behaviours': { keys: ['about', 'brains'], rows: { brains: BRAIN_KEYS } },
   'camera': { keys: ['about', 'fov', 'near', 'far', 'follow', 'portrait', 'landscape', 'fighterSize', 'orbit', 'orbitNote', 'kill'] },
