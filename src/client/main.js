@@ -58,6 +58,8 @@ const fx = createFx(scene, feelDef);
 const sound = createSound(soundDef, specials);
 const blood = createBlood(scene, bloodDef);
 const input = createInput(controls);
+// ?snd=1 shows the audio state next to the build label: "running+sprite+keep 12" = the context runs, the sprite decoded, 12 cues played
+if (params.has('snd')) { const el = document.getElementById('build'); const sha = el.textContent; setInterval(() => { el.textContent = `${el.dataset.sha || sha} ${sound.status()}`; }, 500); fetch('./build.txt', { cache: 'no-store' }).then((r) => r.text()).then((t) => { el.dataset.sha = t.slice(0, 7); }).catch(() => {}); }
 // the fight starts once both bodies are in, or after bodyWaitMs on capsules
 let loaded = 0;
 const started = performance.now();
@@ -87,7 +89,9 @@ const stopMs = (events) => {
 const cam = { yaw: 0, pos: new THREE.Vector3(), look: new THREE.Vector3(), fit: 0, init: false };
 // V1 renders the pair between the last two ticks, by the frame's leftover time (src/main.ts:529): a 60 Hz sim never judders on a 120 Hz screen
 const prev = [{ x: 0, z: 0, h: 0 }, { x: 0, z: 0, h: 0 }];
-const markPrev = () => sim.state.fighters.forEach((f, i) => { prev[i].x = f.x; prev[i].z = f.z; prev[i].h = f.heading; });
+// the body shows the roll's direction while he rolls; the heading (the foe lock) is what the camera and the stick follow
+const shownHeading = (f) => (f.phase === 'roll' ? f.facing : f.heading);
+const markPrev = () => sim.state.fighters.forEach((f, i) => { prev[i].x = f.x; prev[i].z = f.z; prev[i].h = shownHeading(f); prev[i].lh = f.heading; });
 const wrapPi = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 let shown = sim.state.fighters;
 markPrev();
@@ -101,7 +105,7 @@ function updateCamera(dt) {
   const up = (c.up + cam.fit * 0.5) * c.zoom + Math.max(0, raw - back) * 0.5;   // what the cap takes off the distance goes into height
   // V1 places the eye at hero - forward*back + (cos h, -sin h)*side (follow-camera.ts:80); with V2's heading that is the player's
   // left, which puts the player right of centre and the foe clear on the left, as in V1's frame
-  const h = p.heading - camDef.orbit;
+  const h = p.lockHeading - camDef.orbit;   // never the roll's facing: the camera must not swing round with a roll
   const fx = Math.sin(h), fz = Math.cos(h), sx = fz, sz = -fx;
   const eye = new THREE.Vector3(p.x - fx * back + sx * c.side, up, p.z - fz * back + sz * c.side);
   const ax = p.x + fx * c.ahead, az = p.z + fz * c.ahead;
@@ -168,7 +172,8 @@ function frame(t) {
   blood.update(dt);
   const alpha = frozen ? 1 : Math.min(1, acc / STEP);
   shown = sim.state.fighters.map((f, i) => Object.assign(Object.create(f), {
-    x: prev[i].x + (f.x - prev[i].x) * alpha, z: prev[i].z + (f.z - prev[i].z) * alpha, heading: prev[i].h + wrapPi(f.heading - prev[i].h) * alpha,
+    x: prev[i].x + (f.x - prev[i].x) * alpha, z: prev[i].z + (f.z - prev[i].z) * alpha, heading: prev[i].h + wrapPi(shownHeading(f) - prev[i].h) * alpha,
+    lockHeading: prev[i].lh + wrapPi(f.heading - prev[i].lh) * alpha,
   }));
   sim.state.fighters.forEach((f, i) => {
     drawFighter(views[i], shown[i], sim, clips, dt, frozen, anim);

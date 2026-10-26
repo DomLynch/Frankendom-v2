@@ -29,9 +29,17 @@ export function attachBody(view, body, clips, def, swordModel) {
   view.root.add(body);
   view.body = body;
   view.mixer = new THREE.AnimationMixer(body);
-  for (const [role, clip] of Object.entries(clips)) {
+  // A guard held while walking: the legs keep walking under the guard's upper body. Each locomotion clip gets a copy that animates only
+  // the hips and legs (role + '_L'), and the guard clip a copy without them ('Guard_U'); the renderer blends those while he moves guarded.
+  const isLower = (t) => /^mixamorig(Hips|(Left|Right)(UpLeg|Leg|Foot|ToeBase|Toe_End))\./.test(t.name);
+  const derived = {};
+  for (const r of [def.states.idle, def.states.walk, def.states.strafeLeft, def.states.strafeRight, def.states.run]) {
+    if (clips[r]) derived[r + '_L'] = [new THREE.AnimationClip(r + '_L', clips[r].duration, clips[r].tracks.filter(isLower)), def.roles[r]];
+  }
+  if (clips[def.states.guard]) derived.Guard_U = [new THREE.AnimationClip('Guard_U', clips[def.states.guard].duration, clips[def.states.guard].tracks.filter((t) => !isLower(t))), def.roles[def.states.guard]];
+  for (const [role, clip] of [...Object.entries(clips), ...Object.entries(derived).map(([k, [c]]) => [k, c])]) {
     const a = view.mixer.clipAction(clip);
-    const row = def.roles[role];
+    const row = def.roles[role] || derived[role][1];
     a.setLoop(row.loop ? THREE.LoopRepeat : THREE.LoopOnce, Infinity);
     a.clampWhenFinished = true;
     // every clip plays all the time at a weight the renderer sets (no crossfades); a one-shot is scrubbed by time, so it never advances itself
@@ -195,7 +203,7 @@ export function drawFighter(view, f, sim, def, dt, frozen, A) {
   if (view.react && !frozen) view.react.age += dt * sim.rules.tickHz;
 
   // travel speed in the fighter's own frame: forward (signed), and the share of it that is sideways (left positive)
-  const sh = Math.sin(f.heading), ch = Math.cos(f.heading);
+  const lh = f.lockHeading ?? f.heading, sh = Math.sin(lh), ch = Math.cos(lh);
   const speedNow = Math.hypot(f.vx || 0, f.vz || 0);
   const forward = (f.vx || 0) * sh + (f.vz || 0) * ch, left = (f.vx || 0) * ch - (f.vz || 0) * sh;
   const lateral = speedNow > 1e-6 ? left / speedNow : 0;
@@ -219,6 +227,15 @@ export function drawFighter(view, f, sim, def, dt, frozen, A) {
   set(def.states.strafeLeft, rate(def.states.strafeLeft, G.walkRateMin));
   set(def.states.strafeRight, rate(def.states.strafeRight, G.walkRateMin));
   set(def.states.run, back * rate(def.states.run, G.runRateMin));
+  for (const r of [def.states.walk, def.states.strafeLeft, def.states.strafeRight, def.states.run]) { const e = view.actions[r], l = view.actions[r + '_L']; if (e && l) l.a.timeScale = e.a.timeScale; }
+  // guarded and moving: the guard's upper body over walking legs (the full Guard clip only when he stands still)
+  const guardMove = cm && cm.guard && cm.role === def.states.guard && view.actions.Guard_U;
+  const split = {};
+  if (guardMove) {
+    split[cm.role] = cm.fade * (1 - movement);
+    split.Guard_U = cm.fade * movement;
+    for (const r of [def.states.idle, def.states.walk, def.states.strafeLeft, def.states.strafeRight, def.states.run]) split[r + '_L'] = cm.fade * movement * (loco[r] || 0);
+  }
 
   // the combat clip over it, and every weight eased toward its target (snapping through the live blade and a deflect)
   if (cm && cm.role !== view.combatRole) {
@@ -229,7 +246,7 @@ export function drawFighter(view, f, sim, def, dt, frozen, A) {
   const ease = 1 - Math.exp(-step * A.weightRate);
   for (const [role, e] of Object.entries(view.actions)) {
     const isCombat = cm && role === cm.role, fadeW = cm ? cm.fade : 0;
-    const target = (loco[role] || 0) * (1 - fadeW) + (isCombat ? fadeW : 0);
+    const target = guardMove ? (split[role] ?? (loco[role] || 0) * (1 - fadeW)) : (loco[role] || 0) * (1 - fadeW) + (isCombat ? fadeW : 0);
     if (!view.primed) view.w[role] = target;
     else view.w[role] = cm && cm.snap ? (isCombat ? 1 : 0) : view.w[role] + (target - view.w[role]) * ease;
     if (view.w[role] < A.weightFloor && target === 0) view.w[role] = 0;   // an eased weight never reaches 0 by itself: a clip left at 1e-9 would still be evaluated every frame
