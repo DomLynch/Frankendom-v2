@@ -128,8 +128,10 @@ function frame(t) {
     acc += dt * 1000;
     while (acc >= STEP) {
       acc -= STEP;
-      const me = sim.state.fighters[0];
-      const events = sim.step([input.sample(cam.yaw, me), aiOff ? {} : think(brain, sim, 1)]);
+      const me = sim.state.fighters[0], foe = sim.state.fighters[1];
+      // the stick is relative to the foe, as in V1 (the lock-on keeps the hero's heading on the foe): up = at him, sideways = round him
+      const yaw = Math.atan2(me.x - foe.x, me.z - foe.z);
+      const events = sim.step([input.sample(yaw, me), aiOff ? {} : think(brain, sim, 1)]);
       fx.onEvents(events, sim);
       blood.onEvents(events, sim);
       sound.onTick(events, sim);
