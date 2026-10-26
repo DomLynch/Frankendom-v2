@@ -29,7 +29,14 @@ export function bout(a, b, seed, ticks = 60 * 120, tweak) {
   const sim = createSim(data, seed);
   if (tweak) tweak(sim);
   const players = [a, b].map((p, i) => p.brain
-    ? { brain: createBrain({ ...row(p.brain), ...p.with }, seed * 2 + 1 + i, data.behaviours), think: (s) => think(players[i].brain, s, i) }
+    ? {
+      brain: createBrain({ ...row(p.brain), ...p.with }, seed * 2 + 1 + i, data.behaviours), seen: {},
+      think: (s) => {
+        const intent = think(players[i].brain, s, i);
+        for (const [k, v] of Object.entries(players[i].brain.reads || {})) if (v) players[i].seen[k] = true;   // every read it ever held
+        return intent;
+      },
+    }
     : { think: (s) => dummies[p.dummy](s, i) });
   const log = [];
   for (let t = 0; t < ticks && !sim.state.over; t++) {
