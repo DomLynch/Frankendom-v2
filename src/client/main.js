@@ -41,7 +41,7 @@ let seed = Number(params.get('seed')) || 1;
 let sim, brain;
 function newBout() {
   sim = createSim(data, seed);
-  brain = createBrain(brainRow, seed * 7919 + 1);
+  brain = createBrain(brainRow, seed * 7919 + 1, behaviours);
   document.getElementById('msg').textContent = '';
   seed++;
 }

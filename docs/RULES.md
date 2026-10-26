@@ -85,5 +85,5 @@ A phase is age 0 on the tick it starts.
 - Specials.
 - Walls and loiter rules.
 - Wounds and attrition.
-- The AI's habit reads.
+- The AI's spells, missiles, stances, tactic tables and the guardless-fighter hover (the longsword duel brain is ported: `src/sim/brain.js`, rows in `data/behaviours.json`).
 - Record versions and era overlays (the Lead's "don't copy" list).

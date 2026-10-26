@@ -6,15 +6,26 @@
 const MOVE_KEYS = ['id', 'direction', 'path', 'chainPath', 'chained', 'chain', 'windup', 'active', 'recovery', 'damage', 'stamina',
   'staminaDamage', 'stagger', 'poise', 'poiseFrom', 'breaksGuard', 'chip', 'parryable', 'knockback', 'stepIn', 'feintUntil',
   'reach', 'vsGuard', 'posture', 'chamber', 'charges'];
-const BRAIN_KEYS = ['id', 'reaction', 'accuracy', 'parry', 'dodge', 'aggression', 'lapse', 'read', 'pressure', 'thrustShare', 'kick',
-  'staminaFloor', 'postureFloor', 'firstWait', 'waitBase', 'waitRand', 'waitAggro', 'bait', 'modeEvery', 'modeRand', 'far', 'near',
-  'guardChance', 'close', 'approach', 'circle', 'retreat', 'reachSlack', 'reachIn', 'jitter', 'parryLead', 'rollMin', 'rollMax'];
+const BRAIN_KEYS = ['id', 'reaction', 'accuracy', 'parry', 'dodge', 'aggression', 'pressure', 'discipline', 'lapse', 'read',
+  'feint', 'guard', 'disengage', 'circle', 'interrupt', 'kick', 'dash', 'anticipate', 'tellReaction', 'spamRun', 'spamBoth', 'specials'];
+const DIAL_KEYS = ['startLastGap', 'startDecision', 'startWait', 'disengageTicks', 'retreatTicks', 'waitBase', 'waitSpread', 'waitAggrCeil',
+  'rangeSlack', 'reachInset', 'advanceEps', 'loiterShare', 'backstepSlack', 'shakyShare', 'lowRetreatGap', 'farApproachGap', 'guardRollShare',
+  'hardApproachGap', 'midApproachGap', 'lowCloseRetreatGap', 'circleReturnGap', 'guardHoldBase', 'guardHoldSpread', 'estimateMax',
+  'kickWeight', 'baitChance', 'chargeOffset', 'thrustCloseInset', 'lateralStep', 'dashSlack', 'wallSlack', 'dodgeSafeEndMargin',
+  'parryWindowMargin', 'readDecayStep', 'jitterAmp', 'interruptWindupMargin', 'forwardSpeed', 'backSpeed', 'retreatGap', 'retreatGapLow',
+  'nearGap', 'sideShare', 'loiterInward', 'guardSide'];
+const READ_KEYS = ['feint', 'after', 'parry', 'guardTicks', 'guardShare', 'roll', 'swings', 'lightShare', 'baitHold', 'parryBoost', 'parryCap',
+  'chargeBoost', 'kickBoost', 'anticipate', 'baitShare', 'parkShare', 'holdTicks', 'latch', 'plus', 'decay', 'pokerShare', 'kickerShare',
+  'spammerLapseShare', 'guardedKickBase', 'tells'];
 
-// file -> { keys: top-level keys, rows: { arrayKey: row keys } }
+// file -> { keys: top-level keys, rows: { arrayKey: row keys }, maps: { objectKey: its keys } }
 export const SCHEMA = {
   'anim': { keys: ['about', 'weightRate', 'speedRate', 'tiltRate', 'stepMax', 'fadeIn', 'fadeOut', 'gait', 'swing', 'react'] },
   'blood': { keys: ['about', 'spray', 'floor'] },
-  'behaviours': { keys: ['about', 'brains'], rows: { brains: BRAIN_KEYS } },
+  'behaviours': {
+    keys: ['about', 'dials', 'read', 'fight', 'defaults', 'brains'], rows: { brains: BRAIN_KEYS },
+    maps: { dials: DIAL_KEYS, read: READ_KEYS, fight: ['thrustShare', 'close'], defaults: BRAIN_KEYS.filter((k) => k !== 'id') },
+  },
   'camera': { keys: ['about', 'fov', 'near', 'far', 'follow', 'portrait', 'landscape', 'fighterSize', 'orbit', 'orbitNote', 'kill'] },
   'clips': { keys: ['about', 'base', 'bodySet', 'bodySets', 'hideMeshes', 'bodyWaitMs', 'guardTilt', 'sword', 'roles', 'states', 'paths'] },
   'controls': { keys: ['about', 'stick', 'strike', 'guard', 'dodge', 'buttons', 'ringLabels', 'gapPx', 'keys'], rows: { buttons: ['id', 'label', 'angle', 'sizePx'] } },
@@ -59,6 +70,9 @@ export function validateFile(name, json) {
     (json[arr] || []).forEach((row, i) => {
       for (const k of Object.keys(row)) if (!keys.includes(k)) errors.push(`${name}.${arr}[${i}] (${row.id ?? row.press}).${k}: unknown key`);
     });
+  }
+  for (const [obj, keys] of Object.entries(s.maps || {})) {
+    for (const k of Object.keys(json[obj] || {})) if (!keys.includes(k)) errors.push(`${name}.${obj}.${k}: unknown key`);
   }
   banned(json, name, errors);
   return errors;
