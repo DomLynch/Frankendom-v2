@@ -33,6 +33,18 @@ export async function loadBody(def, slot, set = def.bodySet) {
   return root;
 }
 
+// the library sword (data/clips.json sword): a group whose origin is the hand, +Y toward the tip
+export async function loadSword(def) {
+  const g = await once(def.base + def.sword.file);
+  const model = g.scene.clone(true);
+  model.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
+  const box = new THREE.Box3().setFromObject(model);
+  model.position.y = -(box.min.y + def.sword.grip);
+  const group = new THREE.Group();
+  group.add(model);
+  return group;
+}
+
 async function loadClipSource(url) {
   const g = await once(url);
   let arm = null, hips = null;

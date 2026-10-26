@@ -16,7 +16,11 @@
     }
   },
   "bodyWaitMs": 8000,
-  "sword": { "length": 1.0, "handle": 0.12 },
+  "sword": {
+    "about": "The blade in the right hand: a library weapon (assets.json weapon-011, Half Sword long sword, 0.96 m). file is under the library base; grip = how far from the pommel end the hand sits (m); guard / tip = the trail's blade span, in the model's own metres along +Y (pommel -> tip). length / handle size the plain box shown until the model loads, or if it fails.",
+    "file": "assets/weapon-011.glb", "grip": 0.09, "guard": 0.0, "tip": 0.75,
+    "length": 1.0, "handle": 0.12
+  },
   "roles": {
     "Armed":       { "file": "mixamo/clips/gladio/gl055-sword-and-shield-guard-idle.glb", "loop": true },
     "ArmedWalk":   { "file": "mixamo/clips/124540901-walk.glb", "loop": true, "speed": 1.679 },
