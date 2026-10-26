@@ -105,7 +105,7 @@ export function think(brain, sim, me) {
   if (foe.phase === 'attack' && foe.age === 0 && foe.move) {   // ripostes, counters and criticals are earned, not habits
     const punishes = f.phase === 'hurt' || (f.phase === 'attack' && !!f.move && f.age >= moves[f.move].windup + moves[f.move].active);
     if (LIGHTS.has(foe.move)) { if (!punishes) h.run++; } else h.run = 0;
-    if (foe.move === 'heavy_overhead') h.heavies++;
+    if (foe.move === 'heavy_overhead' || moves[foe.move]?.charges) h.heavies++;   // a directional heavy counts as the heavy it is
     else if (foe.move === 'thrust') h.thrusts++;
     else if (LIGHTS.has(foe.move)) h.lights++;
     else if (foe.move === 'kick') h.kicks++;

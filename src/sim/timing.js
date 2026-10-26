@@ -30,6 +30,11 @@ export function deriveClipSet(clips, T, moves, specials, rules) {
     };
     out.moves[id] = row;
   }
+  // a directional heavy is its light's clip with a longer wind-up (Dom: "it took a bit longer"); the tail is the clip's
+  for (const [id, from] of Object.entries(T.derive.heavies)) {
+    const m = byId[id], base = out.moves[from];
+    out.moves[id] = { windup: Math.round(base.windup * T.derive.heavyWindupFactor), active: m.active, recovery: base.recovery };
+  }
   for (const [skill, role] of Object.entries(T.derive.specials)) {
     const s = spans(clips, role, hz);
     out.specials[skill] = { windup: s.windup, recovery: s.tail };

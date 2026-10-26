@@ -54,6 +54,7 @@
   "paths": {
     "light_right": "Attack", "light_left": "Return", "light_right_chain": "Attack", "light_left_chain": "Return",
     "heavy_overhead": "Heavy", "heavy_overhead_chain": "Heavy", "thrust": "Thrust",
+    "heavy_right": "Attack", "heavy_left": "Return", "heavy_thrust": "Thrust",
     "slash_riposte": "Attack", "riposte": "Thrust", "heavy_riposte": "Heavy", "kick": "Kick",
     "skill_pommel": "Thrust", "skill_cleave": "Heavy"
   }

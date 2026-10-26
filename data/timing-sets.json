@@ -7,6 +7,12 @@
       "light_left": "Return",
       "thrust": "Thrust"
     },
+    "heavyWindupFactor": 1.5,
+    "heavies": {
+      "heavy_right": "light_right",
+      "heavy_left": "light_left",
+      "heavy_thrust": "thrust"
+    },
     "specials": {
       "cleave": "SkullCrack",
       "reaping": "Whirlwind",
@@ -49,6 +55,21 @@
         },
         "thrust": {
           "windup": 52,
+          "active": 6,
+          "recovery": 57
+        },
+        "heavy_right": {
+          "windup": 39,
+          "active": 5,
+          "recovery": 39
+        },
+        "heavy_left": {
+          "windup": 39,
+          "active": 5,
+          "recovery": 39
+        },
+        "heavy_thrust": {
+          "windup": 78,
           "active": 6,
           "recovery": 57
         }
