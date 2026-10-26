@@ -10,13 +10,18 @@ import { createSound } from './sound.js';
 import { createBlood } from './blood.js';
 import { loadBody, loadClips, loadSword } from './assets.js';
 import { createSim } from '../sim/sim.js';
+import { applyTimingSet } from '../sim/timing.js';
 import { createBrain, think } from '../sim/brain.js';
 
 const get = (f) => fetch(`./data/${f}.json`, { cache: 'no-cache' }).then((r) => r.json());
-const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specials, feelDef, soundDef, bloodDef, blades, anim] = await Promise.all(
-  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials', 'feel', 'sound', 'blood', 'blades', 'anim'].map(get),
+const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specials, feelDef, soundDef, bloodDef, blades, animBase, timingSets] = await Promise.all(
+  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials', 'feel', 'sound', 'blood', 'blades', 'anim', 'timing-sets'].map(get),
 );
 const params = new URLSearchParams(location.search);
+// ?timing=v1 | clip: V1's tick table or windows as long as each clip (data/timing-sets.json); the set shows next to the build label
+const timingName = timingSets.sets[params.get('timing')] ? params.get('timing') : timingSets.default;
+const applied = applyTimingSet({ rules, moves, specials, blades }, timingSets, timingName);
+const anim = applied.swing ? { ...animBase, swing: { ...animBase.swing, ...applied.swing } } : animBase;
 // ?sword=plain|crafted|ornate (Frankendom's own longswords) or half (the library's Half Sword long sword) picks the blade to try
 const swordPick = params.get('sword');
 if (swordPick === 'half') Object.assign(clips.sword, { file: 'assets/weapon-011.glb', grip: 0.09, guard: 0, tip: 0.75 });
@@ -26,7 +31,7 @@ if (params.get('layers') === '1') clips.hideMeshes = '^Layer_(Sword|Scabbard)'; 
 const hitScale = params.has('hitstop') ? Number(params.get('hitstop')) : hitStop.scale;
 const brainRow = behaviours.brains.find((b) => b.id === (params.get('brain') || 'novice'));
 const aiOff = params.get('ai') === 'off';   // off switch: the opponent stands still
-fetch('./build.txt?v=' + Date.now(), { cache: 'no-store' }).then((r) => (r.ok ? r.text() : '')).then((t) => { document.getElementById('build').textContent = t.slice(0, 7); }).catch(() => {});
+fetch('./build.txt?v=' + Date.now(), { cache: 'no-store' }).then((r) => (r.ok ? r.text() : '')).then((t) => { document.getElementById('build').textContent = `${t.slice(0, 7)} · ${timingName}`; }).catch(() => {});
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -42,7 +47,7 @@ addEventListener('resize', () => {
   camera.updateProjectionMatrix();
 });
 
-const data = { rules, moves, specials, blades };
+const data = { rules: applied.rules, moves: applied.moves, specials: applied.specials, blades };
 let seed = Number(params.get('seed')) || 1;
 let sim, brain;
 function newBout() {

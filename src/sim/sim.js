@@ -15,6 +15,7 @@
 // state. Then phases advance and bodies move. Then contacts resolve against a
 // snapshot, so trades land both ways.
 import { createRng } from './rng.js';
+import { bladeAge } from './timing.js';
 
 const MIRROR = { left: 'right', right: 'left', overhead: 'overhead', thrust: 'thrust', low: 'low' };
 const HEAVY_CLASS = new Set(['heavy_overhead', 'heavy_riposte', 'heavy_counter', 'critical']);
@@ -214,7 +215,7 @@ function castSpecial(f, foe, slot, R, events, i) {
     return;
   }
   if (dist(f, foe) > S.reach) { events.push({ t: 'SpecialRefused', f: i, skill: row.skill, cue: 'far' }); return; }
-  f.special = S.windup;
+  f.special = row.windup ?? S.windup;   // a slot's own windup (the clip-length timing set) or the shared V1 one
   f.castSlot = slot;
   f.castHurt = 0;
   f.castPush = 0;
@@ -235,7 +236,7 @@ function specials(fighters, hpBefore, moves, R, events) {
     const D = fighters[1 - i], row = S.slots[A.castSlot];
     A.special = 0;
     A.specialCd[A.castSlot] = S.cooldown;
-    A.specialRecover = S.recovery;
+    A.specialRecover = row.recovery ?? S.recovery;
     if (D.hp <= 0 || D.phase === 'dead') return;
     if (dist(A, D) > S.reach + S.slack) { events.push({ t: 'SpecialFizzled', f: i, skill: row.skill }); return; }
     const damage = Math.round(S.share * R.health);
@@ -258,8 +259,8 @@ function specials(fighters, hpBefore, moves, R, events) {
     if (took) {
       A.castHurt += took;
       if (A.castHurt >= S.interruptAt * R.health) {
-        const left = Math.min(A.special, S.windup);
-        A.specialCd[A.castSlot] = Math.round((S.interruptCooldown * (1000 + (S.interruptEarly * left) / S.windup)) / 1000);
+        const wind = S.slots[A.castSlot].windup ?? S.windup, left = Math.min(A.special, wind);
+        A.specialCd[A.castSlot] = Math.round((S.interruptCooldown * (1000 + (S.interruptEarly * left) / wind)) / 1000);
         A.special = 0;
         events.push({ t: 'SpecialInterrupted', f: i, dmg: A.castHurt });
         return;
@@ -364,7 +365,7 @@ function advance(f, foe, intent, moves, R) {
     const roll = f.phase === 'roll';
     if (f.age >= (roll ? R.roll.ticks : R.backstep.ticks)) { enter(f, 'ready'); f.evadeEnd = 0; walkBody(f, foe, intent, R, dt); return; }
     if (roll) {
-      stepTo(f.rollX, f.rollZ, R.move.run);   // the body shows the roll's direction (`facing`); `heading` stays on the foe, as the V1 page's does
+      stepTo(f.rollX, f.rollZ, R.move.run * (R.roll.speedMul ?? 1));   // the body shows the roll's direction (`facing`); `heading` stays on the foe, as the V1 page's does
     } else {
       stepTo(-Math.sin(f.heading) * R.backstep.speed, -Math.cos(f.heading) * R.backstep.speed, pace);
     }
@@ -495,7 +496,7 @@ function segmentDistance(a, b, c, d) {
 
 // V1 blade.ts bladeImpact: the baked hilt and tip of the swing at the last tick and this one, in the target's frame; swept in
 // 2 cm steps; a blow lands when the blade passes within `radius` of the target's body line. Returns where it landed, or null.
-function bladeLocation(Bd, kind, A, D, preA, preD) {
+function bladeLocation(Bd, kind, A, D, preA, preD, ageOf) {
   const frames = Bd.kinds[kind], H = Bd.hit;
   const pose = (age) => {
     const at = Math.max(0, Math.min(frames.length - 1, age)), i = Math.floor(at), j = Math.min(frames.length - 1, i + 1), u = at - i;
@@ -505,7 +506,7 @@ function bladeLocation(Bd, kind, A, D, preA, preD) {
     const c = Math.cos(actor.heading), s = Math.sin(actor.heading), x = p[o], y = p[o + 1], z = p[o + 2];
     return [actor.x - target.x + x * c + z * s, y, actor.z - target.z + z * c - x * s];
   });
-  const a = world(pose(A.age - 1), preA, preD), b = world(pose(A.age), A, D);
+  const a = world(pose(ageOf(A.age - 1)), preA, preD), b = world(pose(ageOf(A.age)), A, D);
   const mix = (p, q, u) => p.map((v, i) => v + (q[i] - v) * u);
   const steps = Math.max(1, Math.ceil(Math.max(Math.hypot(...a[0].map((v, i) => v - b[0][i])), Math.hypot(...a[1].map((v, i) => v - b[1][i]))) / H.sampleStep));
   for (let i = 0; i <= steps; i++) {
@@ -531,7 +532,9 @@ function contact(att, def, A, D, ai, moves, R, events, pre) {
   const di = 1 - ai;
   const kind = A.chained && m.chainPath ? m.chainPath : m.path;
   let loc = null;
-  if (kind && R.blades) loc = bladeLocation(R.blades, kind, A, D, pre[ai], pre[di]);
+  // the clip-length timing set stretches the move's phases; V1's baked blade frames follow them (m.v1 = V1's windows)
+  const v1 = m.v1 && (A.chained && m.v1.chained ? m.v1.chained : m.v1), ageOf = v1 ? (age) => bladeAge(age, t, v1) : (age) => age;
+  if (kind && R.blades) loc = bladeLocation(R.blades, kind, A, D, pre[ai], pre[di], ageOf);
   else if (dist(A, D) <= m.reach && offFacing(A, D) <= (m.id === 'kick' ? R.kickArc : R.hitArc)) loc = 'torso';   // the kick (no blade), or a harness with no blade tables
   if (!loc) {
     // a whiffed thrust hangs once at full extension (it used to re-arm every time the hang ran out, so it never recovered)
