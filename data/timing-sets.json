@@ -25,10 +25,10 @@
     "v1": {},
     "clip": {
       "swing": {
-        "windupKey": 1,
-        "windupValue": 1,
-        "followKey": 1,
-        "followValue": 1,
+        "windupKey": 0.85,
+        "windupValue": 0.7,
+        "followKey": 0.3,
+        "followValue": 0.7,
         "snapBefore": 1,
         "snapAfter": 4
       },
