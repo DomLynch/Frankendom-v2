@@ -87,11 +87,6 @@ export function createInput(def, el = document.body) {
   layout();
   addEventListener('resize', layout);
 
-  const stickPushed = () => Math.hypot(s.stick.x, s.stick.y) >= st.deadZone;
-  const moving = () => stickPushed() || ['up', 'down', 'left', 'right'].some((a) => def.keys[a].some((c) => s.keys.has(c)));
-  // the side a cut takes from the KEYBOARD (A/D or the arrows). The on-screen stick is movement only (V1 input.ts:158, Dom 2026-10-07):
-  // a touch tap alternates, and the thumb's slide on STRIKE picks the side
-  const cutSide = () => { const x = keyStick().x; return x <= -st.cutPush ? 'left' : x >= st.cutPush ? 'right' : null; };
 
   // STRIKE gestures
   let sp = null;
@@ -108,11 +103,11 @@ export function createInput(def, el = document.body) {
     s.holding = true;
     const offUp = Math.abs(Math.atan2(dx, -dy)) * 180 / Math.PI;
     if (offUp <= sk.stabHalfAngleDeg) press('thrust');
-    else press('light', dx < 0 ? 'left' : 'right');
+    else press('light');   // Origins sends every light as a plain 'light' (main.ts:447): the cuts alternate, the swipe's side is dropped
   });
   const endStrike = (e) => {
     if (!sp || e.pointerId !== sp.id) return;
-    if (!sp.decided) press('light', cutSide());
+    if (!sp.decided) press('light');
     sp = null;
     s.holding = false;
     strike.classList.remove('on');
@@ -153,11 +148,10 @@ export function createInput(def, el = document.body) {
   r.addEventListener('pointerdown', (e) => {
     r.setPointerCapture(e.pointerId);
     r.classList.add('on');
-    // V1 input.ts:154-159: a tap steps back the moment it lands; held past holdMs the step grows into the roll. With the stick
-    // already pushed it is a roll at once, so the i-frames arrive with the press.
-    if (moving()) { press('dodge'); rp = null; return; }
-    press('backstep');
-    rp = { id: e.pointerId, timer: setTimeout(() => { if (rp) { press('dodge'); rp.done = true; } }, def.dodge.holdMs) };
+    // Origins (origins/preview/main.ts:445-448): a backstep press is a roll too, backward when the stick is at rest; the roll
+    // goes where the stick points. It lands with the press, so the i-frames arrive at once.
+    press('dodge');
+    rp = { id: e.pointerId };
   });
   const endRoll = (e) => {
     r.classList.remove('on');
@@ -180,7 +174,7 @@ export function createInput(def, el = document.body) {
   addEventListener('keydown', (e) => {
     if (e.repeat) return;
     s.keys.add(e.code);
-    if (is(e.code, 'light')) press('light', cutSide());
+    if (is(e.code, 'light')) press('light');
     else if (is(e.code, 'heavy')) { heavyKey = now(); s.holding = true; press('heavy'); }
     else if (is(e.code, 'thrust')) { s.holding = true; press('thrust'); }
     else if (is(e.code, 'kick')) press('kick');
@@ -188,15 +182,13 @@ export function createInput(def, el = document.body) {
     else if (is(e.code, 'special2')) press('special2');
     else if (is(e.code, 'guard')) { s.guard = 'thrust'; press('parry'); }
     else if (is(e.code, 'dodge')) {
-      if (moving()) press('dodge');
-      else { press('backstep'); dodgeKey = setTimeout(() => { press('dodge'); dodgeKey = 'done'; }, def.dodge.holdMs); }
+      press('dodge');
     }
   });
   addEventListener('keyup', (e) => {
     s.keys.delete(e.code);
     if (is(e.code, 'heavy') || is(e.code, 'thrust')) s.holding = false;
     if (is(e.code, 'guard')) s.guard = null;
-    if (is(e.code, 'dodge') && dodgeKey) { if (dodgeKey !== 'done') clearTimeout(dodgeKey); dodgeKey = null; }
   });
   const keyStick = () => {
     const on = (a) => K[a].some((c) => s.keys.has(c));
@@ -230,7 +222,8 @@ export function createInput(def, el = document.body) {
       if (s.guard && !gp && (ks.x || ks.y)) s.guard = ks.x ? (ks.x < 0 ? 'left' : 'right') : ks.y < 0 ? 'overhead' : 'low';
       const fx = -Math.sin(yaw), fz = -Math.cos(yaw), rx = -fz, rz = fx;
       const intent = {
-        mx: rx * x - fx * y, mz: rz * x - fz * y,
+        mx: rx * x - fx * y, mz: rz * x - fz * y,   // world, for the roll's direction
+        sf: -y, ss: x,                                // the stick as the sim's walk reads it: forward, and strafe to the right
         run: sprint && len > 0,
         press: s.pending, side: s.side,
         guard: s.guard, hold: s.holding,

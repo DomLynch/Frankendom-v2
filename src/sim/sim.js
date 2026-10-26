@@ -3,7 +3,8 @@
 // The phone runs it locally, and the server will import this same file.
 //
 // Intent per fighter per tick:
-//   { mx, mz }      world-space move, length 0..1
+//   { mx, mz }      world-space move, length 0..1 (the brain's; also a roll's direction)
+//   { sf, ss }      the stick as the walk reads it: forward (back is capped) and strafe to the right, each -1..1; wins over mx, mz
 //   run             sprint held
 //   press           edge action this tick: 'light' | 'heavy' | 'thrust' | 'kick' | 'parry' | 'dodge' | 'backstep' | null
 //   side            for 'light': 'left' | 'right' (null = alternate)
@@ -242,7 +243,7 @@ function specials(fighters, hpBefore, moves, R, events) {
     events.push({ t: 'SpecialLanded', a: i, d: 1 - i, skill: row.skill, move: row.move, dmg: damage, heavy: true });
     if (D.hp > 0) {
       const m = moves[row.move], away = angleTo(A, D);
-      const steps = Math.round(m.knockback * S.react.knock / 100), k = steps * R.move.walk / R.tickHz;
+      const steps = Math.round(m.knockback * S.react.knock / 100), k = steps * R.move.knockbackSpeed / R.tickHz;
       D.x += Math.sin(away) * k;
       D.z += Math.cos(away) * k;
       const stun = Math.max(D.phase === 'hurt' ? D.stun : 0, Math.round(m.stagger * S.react.stagger / 100), S.staggerFloor[row.skill] || 0);
@@ -330,8 +331,7 @@ function advance(f, foe, intent, moves, R) {
   f.sprinted = false;
   if (f.phase === 'dead') return;
   const dt = 1 / R.tickHz;
-  const walk = R.move.walk;
-  const slow = (f.exhausted ? R.stamina.exhaustedSpeed : 1) * (f.legWound ? R.wound.legSpeed : 1);
+  const pace = R.move.pace;
   const stepTo = (dx, dz, mps) => stepBody(f, foe, dx, dz, mps * dt, R);
 
   if (f.phase === 'attack') {
@@ -346,12 +346,14 @@ function advance(f, foe, intent, moves, R) {
       bump(f);
     }
     if (f.age < t.windup && m.id !== 'kick') f.heading = turnToward(f.heading, angleTo(f, foe), R.turn.windup);
-    if (f.age > R.stepInFrom && f.age < t.windup && !parks) stepTo(Math.sin(f.heading) * m.stepIn, Math.cos(f.heading) * m.stepIn, walk);
+    if (f.age > R.stepInFrom && f.age < t.windup && !parks) stepTo(Math.sin(f.heading) * m.stepIn, Math.cos(f.heading) * m.stepIn, pace);
     if (f.age >= t.windup + t.active + t.recovery) {
       if (!f.chained && m.chain) { f.chainWindow = m.chain.window; f.chainFrom = m.id; }
       enter(f, 'ready');
       f.move = null;
     }
+    // rooted through the wind-up and the active ticks only: the walk is free again in recovery
+    if (f.phase === 'attack' && R.move.recoveryWalk && f.age >= t.windup + t.active) walkBody(f, foe, intent, R, dt);
     return;
   }
   if (f.phase === 'roll' || f.phase === 'backstep') {
@@ -361,13 +363,14 @@ function advance(f, foe, intent, moves, R) {
     if (roll) {
       if (stepTo(f.rollX, f.rollZ, R.move.run)) f.heading = Math.atan2(f.rollX, f.rollZ);
     } else {
-      stepTo(-Math.sin(f.heading) * R.backstep.speed, -Math.cos(f.heading) * R.backstep.speed, walk);
+      stepTo(-Math.sin(f.heading) * R.backstep.speed, -Math.cos(f.heading) * R.backstep.speed, pace);
     }
     return;
   }
   if (f.phase === 'hurt') {
     bump(f);
     if (--f.stun <= 0) { enter(f, 'ready'); f.hurtKind = null; }
+    if (R.move.staggerWalk) walkBody(f, foe, intent, R, dt);
     return;
   }
 
@@ -382,39 +385,43 @@ function advance(f, foe, intent, moves, R) {
     }
     if (f.phase === 'guard' && !intent.guard && f.age >= R.parry.window) dropGuard(f);
   }
-  const mag = Math.min(1, Math.hypot(intent.mx || 0, intent.mz || 0));
-  const running = intent.run && mag > 0 && f.phase === 'ready' && !f.exhausted && f.st > 0;
-  const guarding = f.phase === 'guard';
-  const dxs = mag > 0 ? intent.mx / mag : 0, dzs = mag > 0 ? intent.mz / mag : 0;
-  // the speed the gait is shown at is the full-tilt pace: the same scaling V1 puts on the stick (guard, exhaustion, a leg wound)
-  const scale = (guarding ? R.guard.speed : 1) * slow;
-  const mps = running ? R.move.run : walk;
+  walkBody(f, foe, intent, R, dt);
+}
+
+// V1 origins/preview/main.ts:434-463: the page's walk. The stick splits into forward (back capped) and strafe (reduced), both doubled when
+// running, at the walk speed; the heading is pulled to the foe (lockPull), never snapped; the body is held out of the foe's ring and the wall.
+function walkBody(f, foe, intent, R, dt) {
+  const M = R.move, sh = Math.sin(f.heading), ch = Math.cos(f.heading);
+  const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+  // forward / strafe-right in the stick's own terms; a world-space move (the brain's) is split against the heading
+  const sf = intent.sf != null ? intent.sf : (intent.mx || 0) * sh + (intent.mz || 0) * ch;
+  const ss = intent.ss != null ? intent.ss : -(intent.mx || 0) * ch + (intent.mz || 0) * sh;
+  const running = !!intent.run && Math.hypot(sf, ss) > 0;
+  const k = running ? 2 : 1, ground = running ? M.run / 2 : M.walk;
+  const fw = clamp(sf, -M.back, 1) * k, sd = clamp(ss, -1, 1) * M.strafe * k;
   const gap0 = dist(f, foe), x0 = f.x, z0 = f.z;
-  const moved = mag > 0 ? stepTo(dxs * mag * scale, dzs * mag * scale, mps) : false;
+  const dx = sh * fw - ch * sd, dz = ch * fw + sh * sd;
+  const moved = fw || sd ? stepBody(f, foe, dx * ground, dz * ground, dt, R, false) : false;
   f.vx = (f.x - x0) / dt;
   f.vz = (f.z - z0) / dt;
-  f.speed = mag > 0 ? mps * mag * scale : 0;
-  if (running) {
-    if (moved) {
-      f.heading = Math.atan2(intent.mx, intent.mz);
-      f.sprinted = true;
-      f.st = Math.max(0, f.st - R.stamina.sprintCost);
-      f.rest = Math.max(f.rest, 1);
-      if (f.st <= 0) f.exhausted = true;
-    }
-  } else {
-    // anti-turtling: a tick that opens the gap to the foe by more than `away`, near the wall, regenerates nothing (V1 duel.ts:448)
-    if (moved && dist(f, foe) - gap0 > R.retreat.away && Math.hypot(f.x, f.z) >= R.body.arenaRadius - R.wall.band) f.rest = Math.max(f.rest, 1);
-    f.heading = angleTo(f, foe);
+  f.speed = Math.hypot(f.vx, f.vz);
+  if (running && moved) {
+    f.sprinted = true;
+    f.st = Math.max(0, f.st - R.stamina.sprintCost);
+    f.rest = Math.max(f.rest, 1);
+    if (f.st <= 0 && R.stamina.sprintCost > 0) f.exhausted = true;
   }
+  // anti-turtling: a tick that opens the gap to the foe by more than `away`, near the wall, regenerates nothing (V1 duel.ts:448)
+  if (moved && dist(f, foe) - gap0 > R.retreat.away && Math.hypot(f.x, f.z) >= R.body.arenaRadius - R.wall.band) f.rest = Math.max(f.rest, 1);
+  f.heading += wrap(angleTo(f, foe) - f.heading) * (1 - Math.exp(-M.turnPull * dt));
 }
 
 // V1 sim.ts advance(): one step along (dx, dz) (length capped at 1) at `speed` m/s x dt, pushed out of the other body's 0.85 m
 // ring, held inside the wall, and refused if that still leaves it in the ring. Returns whether the body moved.
-function stepBody(f, foe, dx, dz, d, R) {
+function stepBody(f, foe, dx, dz, d, R, cap = true) {
   const length = Math.hypot(dx, dz);
   if (!length || !Number.isFinite(length)) return false;
-  const k = Math.min(1, length) / length;
+  const k = cap ? Math.min(1, length) / length : 1;
   let x = f.x + dx * k * d, z = f.z + dz * k * d;
   const tx = x - foe.x, tz = z - foe.z, gap = Math.hypot(tx, tz), min = R.body.spacing;
   if (gap < min) {
