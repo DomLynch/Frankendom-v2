@@ -50,11 +50,31 @@ export function createSound(def, specials, base = './') {
     room.connect(master);
     decode().then((b) => { buffer = b; if (!b) console.warn('sound: no sprite format decoded'); });
     if (ctx.state !== 'running') ctx.resume().catch(() => {});
+    // the classic unlock: a one-sample buffer started inside the gesture
+    try { const s = ctx.createBufferSource(); s.buffer = ctx.createBuffer(1, 1, 22050); s.connect(ctx.destination); s.start(0); } catch { /* not fatal */ }
   }
-  for (const type of ['touchend', 'click', 'keydown']) addEventListener(type, start, { passive: true });
+  // iOS plays Web Audio under the silent switch unless the page is also playing a media element: a looping silent clip puts the
+  // session in "playback" mode, so a game's sounds are heard with the ringer off (the audioSession type above covers Safari 17+;
+  // this covers the rest, and costs nothing). It is started from the same touch that starts the context.
+  let keep = null;
+  function keepAwake() {
+    if (keep) { if (keep.paused) keep.play().catch(() => {}); return; }
+    const n = 800, wav = new Uint8Array(44 + n), dv = new DataView(wav.buffer);
+    const w = (o, s) => [...s].forEach((c, i) => dv.setUint8(o + i, c.charCodeAt(0)));
+    w(0, 'RIFF'); dv.setUint32(4, 36 + n, true); w(8, 'WAVEfmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, 8000, true); dv.setUint32(28, 8000, true); dv.setUint16(32, 1, true); dv.setUint16(34, 8, true); w(36, 'data'); dv.setUint32(40, n, true);
+    wav.fill(128, 44);
+    keep = new Audio(URL.createObjectURL(new Blob([wav], { type: 'audio/wav' })));
+    keep.loop = true; keep.volume = 0.01; keep.setAttribute('playsinline', '');
+    keep.play().catch(() => {});
+  }
+  const wake = () => { keepAwake(); start(); };
+  for (const type of ['touchend', 'pointerup', 'click', 'keydown']) addEventListener(type, wake, { passive: true });
 
+  let played = 0;
   function play(c) {
     if (!buffer) return;
+    played++;
     const variants = def.sprite[c.cue];
     if (!variants) return;
     let v = Math.floor(Math.random() * variants.length);
@@ -102,6 +122,8 @@ export function createSound(def, specials, base = './') {
   }
 
   return {
+    // for ?snd=1: what the phone says about the audio, shown beside the build label
+    status: () => (ctx ? `${ctx.state}${buffer ? '+sprite' : '-nosprite'}${keep && !keep.paused ? '+keep' : ''} ${played}` : 'no-touch-yet'),
     // one sim tick's events, plus the phase changes the sim doesn't emit (roll, backstep, whiff)
     onTick(events, sim) {
       if (!ctx || !buffer) return;

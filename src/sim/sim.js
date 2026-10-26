@@ -35,7 +35,7 @@ export function createSim(data, seed = 1) {
 
 function makeFighter(R, x, z, heading) {
   return {
-    x, z, heading,
+    x, z, heading, facing: heading,
     hp: R.health, st: R.stamina.max, maxSt: R.stamina.max, wound: 0, legWound: false, attackFrom: null, loiter: 0, lashed: false,
     posture: 0, postureHold: 0, rest: 0, exhausted: false,
     phase: 'ready', age: 0, fresh: false, stun: 0, hurtKind: null, chainFrom: null,
@@ -318,6 +318,7 @@ function startRoll(f, foe, intent, R, fromBackstep) {
   const mag = Math.hypot(intent.mx || 0, intent.mz || 0);
   if (mag > 0) { f.rollX = intent.mx / mag; f.rollZ = intent.mz / mag; }
   else { const away = angleTo(foe, f); f.rollX = Math.sin(away); f.rollZ = Math.cos(away); }
+  f.facing = Math.atan2(f.rollX, f.rollZ);
   enter(f, 'roll');
   f.parrying = false;
   f.guardSide = null;
@@ -363,7 +364,7 @@ function advance(f, foe, intent, moves, R) {
     const roll = f.phase === 'roll';
     if (f.age >= (roll ? R.roll.ticks : R.backstep.ticks)) { enter(f, 'ready'); f.evadeEnd = 0; walkBody(f, foe, intent, R, dt); return; }
     if (roll) {
-      if (stepTo(f.rollX, f.rollZ, R.move.run)) f.heading = Math.atan2(f.rollX, f.rollZ);
+      stepTo(f.rollX, f.rollZ, R.move.run);   // the body shows the roll's direction (`facing`); `heading` stays on the foe, as the V1 page's does
     } else {
       stepTo(-Math.sin(f.heading) * R.backstep.speed, -Math.cos(f.heading) * R.backstep.speed, pace);
     }
