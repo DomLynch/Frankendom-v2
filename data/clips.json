@@ -18,8 +18,8 @@
   },
   "bodyWaitMs": 8000,
   "sword": {
-    "about": "The blade in the right hand: a library weapon (assets.json weapon-011, Half Sword long sword, 0.96 m). file is under the library base; grip = how far from the pommel end the hand sits (m); guard / tip = the trail's blade span, in the model's own metres along +Y (pommel -> tip). length / handle size the plain box shown until the model loads, or if it fails.",
-    "file": "assets/weapon-011.glb", "grip": 0.09, "guard": 0.0, "tip": 0.75,
+    "about": "The blade in the right hand: Frankendom's own crafted longsword (RPG-game public/weapons/shapes/longsword-crafted.glb, 0.96 m, a broad 30 cm guard and a heavy blade), copied into assets/weapons/. A file starting './' is loaded from this site; any other is under the library base (the Half Sword long sword was assets/weapon-011.glb). grip = how far from the pommel end the hand sits (m); guard / tip = the trail's blade span, in the model's own metres along +Y (pommel -> tip). length / handle size the plain box shown until the model loads, or if it fails.",
+    "file": "./assets/weapons/longsword-ornate.glb", "grip": 0.07, "guard": 0.05, "tip": 0.85,
     "length": 1.0, "handle": 0.12
   },
   "roles": {

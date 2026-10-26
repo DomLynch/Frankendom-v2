@@ -3,6 +3,8 @@
   "weightRate": 24,
   "speedRate": 14,
   "tiltRate": 16,
+  "weightFloor": 0.002,
+  "ground": { "maxLift": 0.3, "rate": 30 },
   "stepMax": 0.1,
   "fadeIn": 12,
   "fadeOut": 10,
