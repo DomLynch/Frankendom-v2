@@ -7,7 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 const require = createRequire('/Users/domininclynch/Developer/frankendom-deploy/');
 const { chromium } = require('playwright');
-const [repo, out, query = ''] = process.argv.slice(2);
+const [repo, out, query = '', keys = 'KeyS+KeyE'] = process.argv.slice(2);   // keys: the held keys, then the pressed one: KeyS+KeyE = a roll, KeyD+KeyF... or just KeyF = a light cut
 fs.mkdirSync(out, { recursive: true });
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json', '.ogg': 'audio/ogg', '.png': 'image/png', '.webp': 'image/webp' };
 const srv = http.createServer((q, r) => {
@@ -34,7 +34,10 @@ cdp.on('Page.screencastFrame', async (f) => {
 await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 80, everyNthFrame: 1 });
 await pg.waitForTimeout(300);
 const press = Date.now() / 1000;
-await pg.keyboard.down('KeyS'); await pg.keyboard.press('KeyE'); await pg.keyboard.up('KeyS');
+const seq = keys.split('+'), pressed = seq.pop();
+for (const k of seq) await pg.keyboard.down(k);
+await pg.keyboard.press(pressed);
+for (const k of seq) await pg.keyboard.up(k);
 await pg.waitForTimeout(3000);
 await cdp.send('Page.stopScreencast');
 await ctx.close(); await b.close(); srv.close();
