@@ -110,11 +110,25 @@ function fitClip(src, root, name) {
 }
 
 // role name -> AnimationClip fitted to this body; a role that fails to load is left out
+// the same motion on the other side of the body: left and right bones swap, and a rotation turns about the body's up axis
+// (x, -y, -z, w), the hips' sideways travel flips. A role with `mirror: true` plays its file mirrored (one slash serves both cuts).
+function mirrorClip(clip) {
+  const swap = (n) => n.replace(/^mixamorig(Left|Right)/, (m, s) => 'mixamorig' + (s === 'Left' ? 'Right' : 'Left'));
+  const tracks = clip.tracks.map((t) => {
+    const dot = t.name.lastIndexOf('.'), node = swap(t.name.slice(0, dot)), prop = t.name.slice(dot + 1), v = t.values.slice();
+    if (prop === 'quaternion') for (let i = 0; i < v.length; i += 4) { v[i + 1] = -v[i + 1]; v[i + 2] = -v[i + 2]; }
+    else if (prop === 'position') for (let i = 0; i < v.length; i += 3) v[i] = -v[i];
+    return new t.constructor(node + '.' + prop, t.times, v);
+  });
+  return new THREE.AnimationClip(clip.name, clip.duration, tracks);
+}
+
 export async function loadClips(def, root) {
   const out = {};
   await Promise.all(Object.entries(def.roles).map(async ([role, row]) => {
     try {
-      out[role] = fitClip(await loadClipSource(def.base + row.file), root, role);
+      const fitted = fitClip(await loadClipSource(def.base + row.file), root, role);
+      out[role] = row.mirror ? mirrorClip(fitted) : fitted;
     } catch (e) {
       console.warn('clip', role, e);
     }

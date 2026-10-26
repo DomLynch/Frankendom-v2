@@ -132,7 +132,8 @@ function combatOf(f, view, sim, def, A) {
   }
   if (f.phase === 'roll' || f.phase === 'backstep') {
     const p = Math.min(1, f.age / (f.phase === 'roll' ? sim.rules.roll.ticks : sim.rules.backstep.ticks));
-    return { role: def.states[f.phase], fade: fade(p), frac: p };
+    const row = def.roles[def.states[f.phase]] || {}, s0 = row.start ?? 0;   // the roll plays start..end of its clip (a roll-to-run's run-out is cut off)
+    return { role: def.states[f.phase], fade: fade(p), frac: s0 + p * ((row.end ?? 1) - s0) };
   }
   if (f.phase === 'hurt') {
     if (f.hurtKind === 'parried' || f.hurtKind === 'broken') {
