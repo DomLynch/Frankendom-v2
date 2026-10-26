@@ -88,7 +88,10 @@ export function createInput(def, el = document.body) {
   addEventListener('resize', layout);
 
   const stickPushed = () => Math.hypot(s.stick.x, s.stick.y) >= st.deadZone;
-  const cutSide = () => (Math.abs(s.stick.x) >= st.cutPush ? (s.stick.x < 0 ? 'left' : 'right') : null);
+  const moving = () => stickPushed() || ['up', 'down', 'left', 'right'].some((a) => def.keys[a].some((c) => s.keys.has(c)));
+  // the side a cut takes from the KEYBOARD (A/D or the arrows). The on-screen stick is movement only (V1 input.ts:158, Dom 2026-10-07):
+  // a touch tap alternates, and the thumb's slide on STRIKE picks the side
+  const cutSide = () => { const x = keyStick().x; return x <= -st.cutPush ? 'left' : x >= st.cutPush ? 'right' : null; };
 
   // STRIKE gestures
   let sp = null;
@@ -150,14 +153,16 @@ export function createInput(def, el = document.body) {
   r.addEventListener('pointerdown', (e) => {
     r.setPointerCapture(e.pointerId);
     r.classList.add('on');
-    if (stickPushed()) { press('dodge'); rp = null; return; }
+    // V1 input.ts:154-159: a tap steps back the moment it lands; held past holdMs the step grows into the roll. With the stick
+    // already pushed it is a roll at once, so the i-frames arrive with the press.
+    if (moving()) { press('dodge'); rp = null; return; }
+    press('backstep');
     rp = { id: e.pointerId, timer: setTimeout(() => { if (rp) { press('dodge'); rp.done = true; } }, def.dodge.holdMs) };
   });
   const endRoll = (e) => {
     r.classList.remove('on');
     if (!rp || e.pointerId !== rp.id) return;
     clearTimeout(rp.timer);
-    if (!rp.done) press('backstep');
     rp = null;
   };
   r.addEventListener('pointerup', endRoll);
@@ -183,15 +188,15 @@ export function createInput(def, el = document.body) {
     else if (is(e.code, 'special2')) press('special2');
     else if (is(e.code, 'guard')) { s.guard = 'thrust'; press('parry'); }
     else if (is(e.code, 'dodge')) {
-      if (stickPushed()) press('dodge');
-      else dodgeKey = setTimeout(() => { press('dodge'); dodgeKey = 'done'; }, def.dodge.holdMs);
+      if (moving()) press('dodge');
+      else { press('backstep'); dodgeKey = setTimeout(() => { press('dodge'); dodgeKey = 'done'; }, def.dodge.holdMs); }
     }
   });
   addEventListener('keyup', (e) => {
     s.keys.delete(e.code);
     if (is(e.code, 'heavy') || is(e.code, 'thrust')) s.holding = false;
     if (is(e.code, 'guard')) s.guard = null;
-    if (is(e.code, 'dodge') && dodgeKey) { if (dodgeKey !== 'done') { clearTimeout(dodgeKey); press('backstep'); } dodgeKey = null; }
+    if (is(e.code, 'dodge') && dodgeKey) { if (dodgeKey !== 'done') clearTimeout(dodgeKey); dodgeKey = null; }
   });
   const keyStick = () => {
     const on = (a) => K[a].some((c) => s.keys.has(c));
@@ -217,7 +222,8 @@ export function createInput(def, el = document.body) {
       const ks = keyStick();
       let x = s.stick.x + ks.x, y = s.stick.y + ks.y;
       let len = Math.hypot(x, y);
-      const sprint = len > st.sprintPush || ['ShiftLeft', 'ShiftRight'].some((c) => s.keys.has(c) && K.run.includes(c));
+      // sprint: the touch stick pushed past sprintPush, or Shift (the keys' own diagonal, length 1.41, is not a sprint)
+      const sprint = Math.hypot(s.stick.x, s.stick.y) > st.sprintPush || ['ShiftLeft', 'ShiftRight'].some((c) => s.keys.has(c) && K.run.includes(c));
       if (len < st.deadZone) { x = 0; y = 0; len = 0; }
       if (len > 1) { x /= len; y /= len; }
       // guard side from the keyboard: Q + arrows
