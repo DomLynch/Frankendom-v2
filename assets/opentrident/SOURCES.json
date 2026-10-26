@@ -1,0 +1,15 @@
+{
+  "about": "One row per body and per clip family that the page loads at runtime from opentrident.org (data/clips.json `base`; never copied into this repo). `prefix` is a path under the base; the longest matching prefix covers a file. `license` is what is known: 'unconfirmed' means nobody has verified the redistribution terms and none is invented here; the OpenTrident dev owns confirming it (Strategy/PM queue item 2, 26 Oct). test/sources.test.mjs fails when a file data/clips.json loads has no row.",
+  "base": "https://opentrident.org/models/",
+  "retrieved": "2026-10-26",
+  "rows": [
+    { "prefix": "custom/girlscout-t-masuyama-full-phone-mixamorig.glb", "kind": "body", "name": "Girlscout (T Masuyama), the player", "origin": "OpenTrident's Mixamo body converted to the 106-joint rig (V2 tab, models/custom)", "license": "unconfirmed", "note": "Mixamo character; Adobe's Mixamo terms apply to the original" },
+    { "prefix": "custom/kachujin-g-rosales-full-phone-mixamorig.glb", "kind": "body", "name": "Kachujin (G Rosales), the opponent", "origin": "OpenTrident's Mixamo body converted to the 106-joint rig (V2 tab, models/custom)", "license": "unconfirmed", "note": "Mixamo character; Adobe's Mixamo terms apply to the original" },
+    { "prefix": "makehuman/mh-male-01.glb", "kind": "body", "name": "MakeHuman male 01 (?body=makehuman player)", "origin": "OpenTrident library, MakeHuman set on the 106-joint rig", "license": "unconfirmed", "note": "" },
+    { "prefix": "makehuman/mh-woman-02.glb", "kind": "body", "name": "MakeHuman woman 02 (?body=makehuman opponent)", "origin": "OpenTrident library, MakeHuman set on the 106-joint rig", "license": "unconfirmed", "note": "" },
+    { "prefix": "mixamo/clips/", "kind": "clips", "name": "Mixamo per-clip GLBs (mixamorig bone names)", "origin": "Mixamo animations, per-clip files in the OpenTrident library", "license": "Adobe Mixamo terms (as OpenTrident lists them; redistribution through OpenTrident not verified by V2 Dev)", "note": "covers every id picked from the OpenTrident clip panel, e.g. Ninja Idle 124660903, Great Sword Slash 122340901, Stabbing 100790901, Quick Roll To Run 120430901" },
+    { "prefix": "mixamo/clips/gladio/", "kind": "clips", "name": "Gladio clips (gl###: heavy overhead, death)", "origin": "retargeted from the game Gladio and Glory", "license": "unconfirmed", "note": "NOT confirmed redistributable; do not assume a licence" },
+    { "prefix": "mixamo/clips/hs/", "kind": "clips", "name": "Half Sword clips (hs###: parry, kick, wounds)", "origin": "retargeted from the game Half Sword", "license": "unconfirmed", "note": "NOT confirmed redistributable; do not assume a licence" },
+    { "prefix": "assets/weapon-011.glb", "kind": "weapon", "name": "Half Sword long sword (?sword=half)", "origin": "OpenTrident library weapon asset", "license": "unconfirmed", "note": "loaded only with ?sword=half; the default blades are Frankendom's own longswords in assets/weapons/" }
+  ]
+}
