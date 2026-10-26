@@ -25,8 +25,8 @@
   "roles": {
     "Armed":       { "file": "mixamo/clips/104210901-ready-idle.glb", "loop": true },
     "ArmedWalk":   { "file": "mixamo/clips/124540901-walk.glb", "loop": true, "speed": 1.679 },
-    "StrafeLeft":  { "file": "mixamo/clips/117610901-left-strafe.glb", "loop": true, "speed": 3.6 },
-    "StrafeRight": { "file": "mixamo/clips/117610902-right-strafe.glb", "loop": true, "speed": 3.6 },
+    "StrafeLeft":  { "file": "mixamo/clips/117690901-left-strafe-walk.glb", "loop": true, "speed": 1.95 },
+    "StrafeRight": { "file": "mixamo/clips/117690902-right-strafe-walk.glb", "loop": true, "speed": 1.95 },
     "Run":         { "file": "mixamo/clips/111290901-run.glb", "loop": true, "speed": 3.41 },
     "Guard":       { "file": "mixamo/clips/128650903-standing-block-idle.glb", "loop": true },
     "BlockImpact": { "file": "mixamo/clips/122380901-great-sword-blocking.glb" },
