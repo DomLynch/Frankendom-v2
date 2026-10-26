@@ -133,7 +133,9 @@ function combatOf(f, view, sim, def, A) {
   if (f.phase === 'roll' || f.phase === 'backstep') {
     const p = Math.min(1, f.age / (f.phase === 'roll' ? sim.rules.roll.ticks : sim.rules.backstep.ticks));
     const row = def.roles[def.states[f.phase]] || {}, s0 = row.start ?? 0;   // the roll plays start..end of its clip (a roll-to-run's run-out is cut off)
-    return { role: def.states[f.phase], fade: fade(p), frac: s0 + p * ((row.end ?? 1) - s0) };
+    // a roll-to-run ends in a run pose: its weight eases out over the clip's last 1/rollFadeOut, so the run-out blends into the stance
+    // instead of snapping (Dom 26 Oct: "suddenly switches to the normal stance")
+    return { role: def.states[f.phase], fade: Math.min(1, p * A.fadeIn, (1 - p) * (A.rollFadeOut ?? A.fadeOut)), frac: s0 + p * ((row.end ?? 1) - s0) };
   }
   if (f.phase === 'hurt') {
     if (f.hurtKind === 'parried' || f.hurtKind === 'broken') {
