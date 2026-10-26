@@ -1,9 +1,10 @@
 {
   "about": "Bodies and clips, loaded at runtime from the OpenTrident library (never copied here). Bodies are the 106-joint MakeHuman set; clips are the library's per-clip GLBs (mixamorig bone names). Keys are the game's role names (Strategy 2026-10-25); values are clip ids picked by the OpenTrident Dev, to be checked on a body before they lock. `start` / `hit` = clip fractions where the swing starts and where it strikes, measured on mh-male-01 from the right hand's speed relative to the hips (start: first frame over 25 % of peak; hit: peak; the foot for Kick). The renderer maps the sim's wind-up onto start..hit (skipping the flat lead-in, V1's start offsets) and active+recovery onto hit..end.",
   "base": "https://opentrident.org/models/",
-  "bodySet": "makehuman",
+  "bodySet": "mixamo",
   "bodySets": {
-    "about": "Dom 2026-10-25, the one-mold rule: V2 loads only bodies on the 106-joint rig. Every set names its rig; the validator fails CI on any set that isn't 106, and the loader refuses one too (falling back to the default). The MakeHuman pair wears its own armour layers; only its loose sword and scabbard are hidden. The Mixamo knights return as a set here once OpenTrident's V2 tab has them converted to 106.",
+    "about": "Dom 2026-10-25, the one-mold rule: V2 loads only bodies on the 106-joint rig. Every set names its rig; the validator fails CI on any set that isn't 106, and the loader refuses one too (falling back to the default). The MakeHuman pair wears its own armour layers; only its loose sword and scabbard are hidden. The default is Dom's pick (26 Oct): player Girlscout, opponent Kachujin, both OpenTrident's Mixamo bodies converted to 106 (V2 tab, models/custom). Both wear the same Layer_* armour meshes; only the loose sword and scabbard are hidden. ?body=makehuman loads the MakeHuman pair.",
+    "mixamo": { "rig": 106, "player": "custom/girlscout-t-masuyama-full-phone-mixamorig.glb", "opponent": "custom/kachujin-g-rosales-full-phone-mixamorig.glb" },
     "makehuman": { "rig": 106, "player": "makehuman/mh-male-01.glb", "opponent": "makehuman/mh-woman-02.glb" }
   },
   "hideMeshes": "^Layer_(Sword|Scabbard)",
