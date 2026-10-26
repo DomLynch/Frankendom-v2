@@ -13,8 +13,8 @@ import { createSim } from '../sim/sim.js';
 import { createBrain, think } from '../sim/brain.js';
 
 const get = (f) => fetch(`./data/${f}.json`, { cache: 'no-cache' }).then((r) => r.json());
-const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specials, feelDef, soundDef, bloodDef] = await Promise.all(
-  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials', 'feel', 'sound', 'blood'].map(get),
+const [rules, moves, controls, stage, clips, camDef, hitStop, behaviours, specials, feelDef, soundDef, bloodDef, blades] = await Promise.all(
+  ['rules', 'move-defs', 'controls', 'stage', 'clips', 'camera', 'hit-stop', 'behaviours', 'specials', 'feel', 'sound', 'blood', 'blades'].map(get),
 );
 const params = new URLSearchParams(location.search);
 const hitScale = params.has('hitstop') ? Number(params.get('hitstop')) : hitStop.scale;
@@ -36,7 +36,7 @@ addEventListener('resize', () => {
   camera.updateProjectionMatrix();
 });
 
-const data = { rules, moves, specials };
+const data = { rules, moves, specials, blades };
 let seed = Number(params.get('seed')) || 1;
 let sim, brain;
 function newBout() {

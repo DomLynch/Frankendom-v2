@@ -5,7 +5,7 @@ import { createSim } from '../src/sim/sim.js';
 import { createBrain, think } from '../src/sim/brain.js';
 
 const load = (f) => JSON.parse(readFileSync(new URL(`../data/${f}.json`, import.meta.url), 'utf8'));
-const data = { rules: load('rules'), moves: load('move-defs'), behaviours: load('behaviours'), specials: load('specials') };
+const data = { rules: load('rules'), moves: load('move-defs'), behaviours: load('behaviours'), specials: load('specials'), blades: load('blades') };
 const easy = data.behaviours.brains.find((b) => b.id === 'easy');
 
 // two brains fight; returns the event log and final state
@@ -65,6 +65,54 @@ test('a light lands on tick 20 for 14 damage and staggers 24', () => {
   assert.equal(hit.dmg, 14);
   const b = sim.state.fighters[1];
   assert.equal(b.hp, 150 - 14);
+});
+
+// V1 bands (band-defs.json, fixed edges): the longsword's best band is 1.35-1.8 m, measured where the swing began
+test('a blow thrown inside the best band lands whole; closer than 1.35 m it lands at 0.4x damage and knockback', () => {
+  const dmgAt = (gap) => {
+    const sim = duel(gap);
+    sim.step([{ press: 'light' }, idle]);
+    return run(sim, 30).find((e) => e.t === 'Hit');
+  };
+  assert.equal(dmgAt(1.5).dmg, 14);
+  const close = dmgAt(1.2);
+  assert.equal(close.dmg, 6);   // round(14 x 0.4)
+  assert.equal(close.glance, true);
+});
+
+test('a blade wound costs 8 stamina off the bar\'s ceiling; a leg wound slows the walk', () => {
+  const sim = duel(1.5);
+  sim.step([{ press: 'light' }, idle]);
+  run(sim, 30);
+  const b = sim.state.fighters[1];
+  assert.equal(b.maxSt, 92);
+  assert.ok(b.wound > 0);
+});
+
+test('a backstep with the wall behind is refused and costs nothing', () => {
+  const sim = duel(3);
+  const a = sim.state.fighters[0];
+  a.x = 0; a.z = -8; a.heading = 0;   // standing on the ring facing the foe: the wall is at his back
+  const ev = sim.step([{ press: 'backstep' }, idle]);
+  assert.ok(ev.some((e) => e.t === 'PressRefused'));
+  assert.equal(a.st, 100);
+  assert.equal(a.phase, 'ready');
+});
+
+test('a light out of a backstep takes the chained timing', () => {
+  const sim = duel(3);
+  const a = sim.state.fighters[0];
+  sim.step([{ press: 'backstep' }, idle]);
+  run(sim, 8);                                     // the tail of the step cancels into a swing
+  sim.step([{ press: 'light' }, idle]);
+  assert.equal(a.chained, true);
+});
+
+test('a fighter cannot walk through the other: the 0.85 m ring holds', () => {
+  const sim = duel(1.2);
+  const [a, b] = sim.state.fighters;
+  for (let i = 0; i < 90; i++) sim.step([{ mx: 0, mz: 1 }, idle]);
+  assert.ok(Math.hypot(a.x - b.x, a.z - b.z) >= 0.85 - 1e-6);
 });
 
 test('parry inside the 10-tick window stuns the attacker 90 and opens a riposte', () => {
@@ -134,7 +182,7 @@ test('a special out of reach is refused and spends nothing', () => {
 });
 
 test('a heavy landing during the windup interrupts the special; recovery blocks attacks', () => {
-  const sim = duel(1.2);
+  const sim = duel(1.5);   // inside the longsword's best band (1.35-1.8 m): closer or farther, a blow lands at 0.4x
   const [a, b] = sim.state.fighters;
   a.specialCd = [0, 0];
   b.specialCd = [0, 0];

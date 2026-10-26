@@ -22,7 +22,9 @@ export const SCHEMA = {
   'hit-stop': { keys: ['about', 'scale', 'stop', 'heavy'], rows: { stop: ['id', 'ms'], heavy: ['id', 'ms'] } },
   'move-defs': { keys: ['about', 'moves', 'paths'], rows: { moves: MOVE_KEYS, paths: ['id', 'clip', 'source', 'windup', 'active', 'recovery'] } },
   'rules': { keys: ['about', 'tickHz', 'health', 'death', 'stamina', 'guard', 'parry', 'feint', 'roll', 'backstep', 'posture', 'counter',
-    'rear', 'stopHit', 'charge', 'buffer', 'stepInFrom', 'turn', 'kickArc', 'hitArc', 'cleanDrain', 'exhaustedHitStun', 'move', 'body'] },
+    'rear', 'stopHit', 'charge', 'buffer', 'stepInFrom', 'turn', 'kickArc', 'hitArc', 'cleanDrain', 'exhaustedHitStun', 'move', 'body',
+    'bands', 'flank', 'wall', 'wound', 'bloodied', 'retreat'] },
+  'blades': { keys: ['about', 'hit', 'kinds'] },
   'sound': { keys: ['about', 'spriteSeconds', 'files', 'mix', 'events', 'synth', 'sprite'] },
   'specials': {
     keys: ['about', 'windup', 'reach', 'slack', 'share', 'first', 'cooldown', 'recovery', 'interruptAt', 'interruptCooldown', 'interruptEarly',
@@ -71,6 +73,10 @@ export function validateAll(files) {
     for (const f of m.chain?.follow || []) if (!moves.has(f)) errors.push(`move-defs.${m.id}.chain.follow: no move "${f}"`);
   }
   for (const s of files.specials?.slots || []) if (!moves.has(s.move)) errors.push(`specials.${s.press}: no move "${s.move}"`);
+  if (files.blades) {
+    for (const m of moves.values()) for (const p of [m.path, m.chainPath]) if (p && !files.blades.kinds[p]) errors.push(`blades.kinds: no sweep for "${p}" (move ${m.id})`);
+    for (const [k, frames] of Object.entries(files.blades.kinds)) if (!frames.every((f) => f.length === 6)) errors.push(`blades.kinds.${k}: every frame is [hilt xyz, tip xyz]`);
+  }
   const clips = files.clips;
   if (clips) {
     for (const [path, role] of Object.entries(clips.paths || {})) if (!clips.roles[role]) errors.push(`clips.paths.${path}: no role "${role}"`);
