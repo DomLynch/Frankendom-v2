@@ -41,7 +41,7 @@
     "Whirlwind":   { "file": "mixamo/clips/128650914-standing-melee-attack-360-high.glb", "start": 0.172, "hit": 0.34, "end": 0.577 },
     "GroundSlam":  { "file": "mixamo/clips/128650921-standing-melee-run-jump-attack.glb", "start": 0.3, "hit": 0.46, "end": 0.664 },
     "Lunge":       { "file": "mixamo/clips/128690929-standing-torch-melee-attack-stab.glb", "start": 0.06, "hit": 0.28, "end": 0.589 },
-    "Roll":        { "file": "mixamo/clips/120430901-quick-roll-to-run.glb", "start": 0, "end": 0.5 },
+    "Roll":        { "file": "mixamo/clips/120430901-quick-roll-to-run.glb", "start": 0, "end": 0.95 },
     "Backstep":    { "file": "mixamo/clips/120430901-quick-roll-to-run.glb", "start": 0, "end": 0.2 },
     "Hit":         { "file": "mixamo/clips/hs/hs047-wound-upper-w-f.glb" },
     "Death":       { "file": "mixamo/clips/gladio/gl012-death-with-weapon.glb" }
