@@ -1,3 +1,6 @@
 node_modules/
 .DS_Store
 *.mp4
+# local tool state (Claude Code worktrees and settings, Serena index): never part of the game
+.claude/
+.serena/
