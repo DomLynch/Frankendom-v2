@@ -54,9 +54,9 @@
           }
         },
         "thrust": {
-          "windup": 52,
+          "windup": 32,
           "active": 6,
-          "recovery": 57
+          "recovery": 90
         },
         "heavy_right": {
           "windup": 39,
@@ -69,9 +69,9 @@
           "recovery": 39
         },
         "heavy_thrust": {
-          "windup": 78,
+          "windup": 48,
           "active": 6,
-          "recovery": 57
+          "recovery": 90
         }
       },
       "specials": {

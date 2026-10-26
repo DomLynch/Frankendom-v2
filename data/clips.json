@@ -35,7 +35,7 @@
     "Attack":      { "file": "mixamo/clips/122340901-great-sword-slash.glb", "start": 0.075, "hit": 0.419, "dur": 1.2667 },
     "Return":      { "file": "mixamo/clips/122340901-great-sword-slash.glb", "mirror": true, "start": 0.075, "hit": 0.419, "dur": 1.2667 },
     "Heavy":       { "file": "mixamo/clips/gladio/gl046-gladius-right-overhead-slash.glb", "start": 0.25, "hit": 0.4 },
-    "Thrust":      { "file": "mixamo/clips/100790901-stabbing.glb", "start": 0.1, "hit": 0.506, "dur": 2.1333 },
+    "Thrust":      { "file": "mixamo/clips/128690929-standing-torch-melee-attack-stab.glb", "mirror": true, "start": 0.125, "hit": 0.344, "dur": 2.4333 },
     "Kick":        { "file": "mixamo/clips/90018-kicking.glb", "start": 0.237, "hit": 0.394, "dur": 1.5 },
     "SkullCrack":  { "file": "mixamo/clips/128650912-standing-melee-attack-downward.glb", "start": 0.074, "hit": 0.37, "dur": 2.2667 },
     "Whirlwind":   { "file": "mixamo/clips/128650914-standing-melee-attack-360-high.glb", "start": 0.132, "hit": 0.34, "dur": 3.1667 },
